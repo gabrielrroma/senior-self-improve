@@ -1,6 +1,6 @@
-# Rotina Di·ria
+# Rotina Di√°ria
 
-Aplicativo base para acompanhar tarefas do dia e recompensas por conclus„o.
+Aplicativo base para acompanhar tarefas do dia e recompensas por conclus√£o.
 
 ## Como executar
 
@@ -16,6 +16,6 @@ Aplicativo base para acompanhar tarefas do dia e recompensas por conclus„o.
 ## Funcionalidades iniciais
 
 - adicionar tarefas
-- marcar tarefas como concluÌdas
-- somar pontos por tarefa concluÌda
+- marcar tarefas como conclu√≠das
+- somar pontos por tarefa conclu√≠da
 - salvar o estado localmente em `data/tasks.json`
