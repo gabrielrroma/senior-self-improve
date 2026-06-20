@@ -24,6 +24,10 @@ dist/
 # Local app data
 /data/
 
+# Local Markdown notes
+*.md
+!README.md
+
 # OS files
 .DS_Store
 Thumbs.db
