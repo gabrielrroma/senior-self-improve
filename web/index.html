@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rotina Diaria</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="todayLabel">Painel de hoje</p>
+          <h1>Rotina Diaria</h1>
+        </div>
+        <button class="ghost-button" id="themeToggle" type="button">Modo escuro</button>
+      </header>
+
+      <main>
+        <section class="metrics-grid" aria-label="Resumo do dia">
+          <article class="metric-card">
+            <span>Concluidas</span>
+            <strong id="completedMetric">0 de 0</strong>
+            <div class="meter"><span id="dayProgressBar"></span></div>
+          </article>
+          <article class="metric-card">
+            <span>Pendentes</span>
+            <strong id="pendingMetric">0</strong>
+            <small id="progressMetric">0%</small>
+          </article>
+          <article class="metric-card">
+            <span>Pontos hoje</span>
+            <strong id="todayPointsMetric">0</strong>
+            <small id="goalMetric">0/30 pts</small>
+          </article>
+          <article class="metric-card accent">
+            <span>Nivel</span>
+            <strong id="levelMetric">1</strong>
+            <small id="xpMetric">0 XP total</small>
+          </article>
+          <article class="metric-card wallet-card">
+            <span>Disponiveis</span>
+            <strong id="availablePointsMetric">0</strong>
+            <small id="spentPointsMetric">0 usados</small>
+          </article>
+        </section>
+
+        <section class="workspace-grid">
+          <aside class="side-stack">
+            <section class="tool-panel">
+              <div class="panel-heading">
+                <h2 id="formTitle">Nova tarefa</h2>
+              </div>
+              <form id="taskForm" autocomplete="off">
+                <label class="field">
+                  <span>Tarefa</span>
+                  <input id="taskTitle" name="title" type="text" maxlength="120" required />
+                </label>
+
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Prioridade</span>
+                    <select id="taskPriority" name="priority"></select>
+                  </label>
+                  <label class="field">
+                    <span>Categoria</span>
+                    <select id="taskCategory" name="category"></select>
+                  </label>
+                </div>
+
+                <label class="check-field">
+                  <input id="taskPinned" name="pinned" type="checkbox" />
+                  <span>Missao fixa</span>
+                </label>
+
+                <div class="button-row">
+                  <button class="primary-button" id="submitTaskButton" type="submit">Adicionar</button>
+                  <button class="ghost-button" id="clearTaskButton" type="button">Limpar</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="tool-panel">
+              <div class="panel-heading">
+                <h2>Meta diaria</h2>
+                <strong id="streakMetric">0 dias</strong>
+              </div>
+              <form class="goal-form" id="goalForm">
+                <label class="field">
+                  <span>Pontos da meta</span>
+                  <input id="dailyGoalInput" name="daily_goal_points" type="number" step="5" />
+                </label>
+                <button class="ghost-button" type="submit">Salvar</button>
+              </form>
+              <div class="meter wide"><span id="goalProgressBar"></span></div>
+              <p class="support-text" id="motivationText">Comece com uma tarefa simples.</p>
+            </section>
+
+            <section class="tool-panel">
+              <div class="panel-heading">
+                <h2 id="rewardFormTitle">Nova recompensa</h2>
+              </div>
+              <form id="rewardForm" autocomplete="off">
+                <label class="field">
+                  <span>Recompensa</span>
+                  <input id="rewardTitle" name="title" type="text" maxlength="120" required />
+                </label>
+
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Custo</span>
+                    <input id="rewardCost" name="cost" type="number" min="1" step="5" required />
+                  </label>
+                  <label class="field">
+                    <span>Detalhe</span>
+                    <input id="rewardDescription" name="description" type="text" maxlength="160" />
+                  </label>
+                </div>
+
+                <div class="button-row">
+                  <button class="primary-button" id="submitRewardButton" type="submit">Adicionar</button>
+                  <button class="ghost-button" id="clearRewardButton" type="button">Limpar</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="tool-panel">
+              <div class="panel-heading">
+                <h2>Historico</h2>
+                <span id="bestStreakMetric">Melhor: 0</span>
+              </div>
+              <div class="history-list" id="historyList"></div>
+            </section>
+          </aside>
+
+          <section class="right-stack">
+            <section class="tasks-panel">
+              <div class="task-toolbar">
+                <h2>Tarefas</h2>
+                <div class="segmented-control" id="filterButtons" role="tablist"></div>
+              </div>
+              <div class="task-list" id="taskList"></div>
+            </section>
+
+            <section class="rewards-panel">
+              <div class="task-toolbar">
+                <h2>Loja de recompensas</h2>
+                <strong id="storeBalanceMetric">0 pts</strong>
+              </div>
+              <div class="rewards-layout">
+                <div class="reward-list" id="rewardList"></div>
+                <section class="redemption-panel" aria-label="Historico de resgates">
+                  <div class="panel-heading">
+                    <h2>Resgates</h2>
+                  </div>
+                  <div class="redemption-list" id="redemptionList"></div>
+                </section>
+              </div>
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Pronto</div>
+
+    <template id="taskTemplate">
+      <article class="task-card">
+        <div class="task-status"></div>
+        <div class="task-content">
+          <div class="task-title-row">
+            <h3></h3>
+            <span class="pin-label">Fixa</span>
+          </div>
+          <div class="task-meta"></div>
+        </div>
+        <div class="task-actions">
+          <button class="primary-button small" data-action="complete" type="button">Concluir</button>
+          <button class="ghost-button small" data-action="edit" type="button">Editar</button>
+          <button class="ghost-button small" data-action="pin" type="button">Fixar</button>
+          <button class="danger-button small" data-action="delete" type="button">Excluir</button>
+        </div>
+      </article>
+    </template>
+
+    <template id="rewardTemplate">
+      <article class="reward-card">
+        <div>
+          <h3></h3>
+          <p class="reward-description"></p>
+          <div class="reward-meta"></div>
+        </div>
+        <div class="reward-actions">
+          <button class="primary-button small" data-reward-action="redeem" type="button">Resgatar</button>
+          <button class="ghost-button small" data-reward-action="edit" type="button">Editar</button>
+          <button class="danger-button small" data-reward-action="delete" type="button">Excluir</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

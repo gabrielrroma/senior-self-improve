@@ -2,7 +2,7 @@
 
 Este roadmap organiza a evolução do app de rotina diária com recompensas.
 
-A ideia principal do projeto é criar um app desktop simples onde o usuário possa organizar suas tarefas, acompanhar seu progresso, ganhar pontos e se motivar a manter uma rotina mais consistente.
+A ideia principal do projeto é criar um webapp local simples onde o usuário possa organizar suas tarefas, acompanhar seu progresso, ganhar pontos e se motivar a manter uma rotina mais consistente.
 
 ---
 
@@ -23,7 +23,7 @@ O app deve permitir que o usuário:
 
 O MVP ideal é:
 
-> Um app desktop onde o usuário adiciona tarefas do dia, define prioridade, marca como concluída, ganha pontos, vê o progresso diário e mantém tudo salvo localmente com um histórico simples.
+> Um webapp local onde o usuário adiciona tarefas do dia, define prioridade, marca como concluída, ganha pontos, vê o progresso diário e mantém tudo salvo localmente com um histórico simples.
 
 ---
 
