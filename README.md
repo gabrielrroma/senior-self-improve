@@ -1,21 +1,26 @@
-# Rotina Diária
+# Rotina Diaria
 
-Aplicativo base para acompanhar tarefas do dia e recompensas por conclusão.
+Webapp local para acompanhar tarefas do dia e recompensas por conclusao.
 
 ## Como executar
 
 1. Instale o Python 3.10+.
-2. Execute o comando abaixo:
+2. Execute o servidor local:
 
    ```bash
-   python app.py
+   python web_app.py
    ```
 
-   Ou abra o arquivo `run.bat` no Windows.
+3. Abra o endereco exibido no terminal, como `http://127.0.0.1:8000/`.
 
-## Funcionalidades iniciais
+## Dados locais
 
-- adicionar tarefas
-- marcar tarefas como concluídas
-- somar pontos por tarefa concluída
-- salvar o estado localmente em `data/tasks.json`
+O app cria `data/tasks.json` automaticamente para salvar tarefas, pontos, historico e recompensas. A pasta `data/` fica fora do Git.
+
+## Funcionalidades
+
+- adicionar, editar, excluir, fixar e reabrir tarefas
+- marcar tarefas como concluidas
+- somar pontos por prioridade
+- acompanhar meta diaria, nivel, XP, streak e historico
+- criar e resgatar recompensas usando pontos disponiveis

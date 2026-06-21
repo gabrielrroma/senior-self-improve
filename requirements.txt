@@ -1,1 +1,0 @@
-# Nenhuma dependência externa é necessária para esta base inicial.
