@@ -57,6 +57,8 @@ WEB_DIR = ROOT_DIR / "web"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8000
 
+mimetypes.add_type("image/webp", ".webp")
+
 
 class RoutineApiError(Exception):
     def __init__(self, message, status=HTTPStatus.BAD_REQUEST):
@@ -69,6 +71,7 @@ class RoutineWebState:
     def __init__(self, storage=None):
         self.storage = storage or RoutineStorage()
         self.lock = threading.RLock()
+        self.profile = {}
         self.tasks = []
         self.history = []
         self.archived_days = []
@@ -83,6 +86,7 @@ class RoutineWebState:
 
     def _load_data(self):
         state, error = self.storage.load()
+        self.profile = state["profile"]
         self.tasks = state["tasks"]
         self.history = state["history"]
         self.archived_days = state["archived_days"]
@@ -106,7 +110,8 @@ class RoutineWebState:
             self.points_total,
             self.rewards,
             self.reward_redemptions,
-            self.points_spent,
+            points_spent=self.points_spent,
+            profile=self.profile,
         )
         if error:
             raise RoutineApiError(error, HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -198,6 +203,7 @@ class RoutineWebState:
                         "id": reward["id"],
                         "title": reward["title"],
                         "description": reward.get("description", ""),
+                        "image_url": reward.get("image_url", ""),
                         "cost": reward["cost"],
                         "cost_label": f"{reward['cost']} pts",
                         "created_at": reward.get("created_at"),
@@ -275,6 +281,7 @@ class RoutineWebState:
                     ),
                 },
                 "points_total": self.points_total,
+                "profile": self.profile,
                 "tasks": tasks,
                 "history": history,
                 "rewards": rewards,
@@ -372,7 +379,8 @@ class RoutineWebState:
 
             cost = self._get_reward_cost_or_error(payload)
             description = str(payload.get("description", "")).strip()
-            self.rewards.append(create_reward(title, cost, description))
+            image_url = str(payload.get("image_url", "")).strip()
+            self.rewards.append(create_reward(title, cost, description, image_url))
             self._save_data()
             return self.snapshot(message="Recompensa adicionada.")
 
@@ -385,7 +393,8 @@ class RoutineWebState:
 
             cost = self._get_reward_cost_or_error(payload)
             description = str(payload.get("description", "")).strip()
-            update_reward(reward, title, cost, description)
+            image_url = str(payload.get("image_url", "")).strip()
+            update_reward(reward, title, cost, description, image_url)
             self._save_data()
             return self.snapshot(message="Recompensa atualizada.")
 

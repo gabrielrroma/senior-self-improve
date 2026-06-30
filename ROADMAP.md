@@ -27,6 +27,22 @@ O MVP ideal é:
 
 ---
 
+## Status atual
+
+Atualizado em 2026-06-30.
+
+O app já cobre o MVP, organização visual, histórico diário, reset diário, gamificação inicial, metas diárias e recompensas personalizáveis com resgate. Na prática, o produto está depois da Fase 4, com parte da Fase 6 e da Fase Técnica já iniciada.
+
+Próximos focos recomendados:
+
+* filtros por prioridade e categoria
+* estatísticas semanais
+* conquistas
+* testes dos fluxos principais
+* organização técnica em pastas
+
+---
+
 # Fase 1 ? MVP Funcional
 
 Objetivo: criar a base mínima para o app funcionar bem.
@@ -172,9 +188,9 @@ Objetivo: deixar o app mais organizado, visual e agradável de usar.
 
 ## Histórico diário simples
 
-* [ ] Criar registro diário de progresso
+* [x] Criar registro diário de progresso
 
-* [ ] Salvar resumo do dia:
+* [x] Salvar resumo do dia:
 
   * Data
   * Tarefas concluídas
@@ -182,21 +198,21 @@ Objetivo: deixar o app mais organizado, visual e agradável de usar.
   * Pontos ganhos
   * Porcentagem concluída
 
-* [ ] Criar tela ou seção para visualizar histórico
+* [x] Criar tela ou seção para visualizar histórico
 
 ---
 
 ## Reset diário
 
-* [ ] Detectar quando o dia mudou
+* [x] Detectar quando o dia mudou
 
-* [ ] Salvar resumo do dia anterior
+* [x] Salvar resumo do dia anterior
 
-* [ ] Preparar lista de tarefas do novo dia
+* [x] Preparar lista de tarefas do novo dia
 
-* [ ] Manter pontos totais acumulados
+* [x] Manter pontos totais acumulados
 
-* [ ] Garantir que os dados antigos não sejam perdidos
+* [x] Garantir que os dados antigos não sejam perdidos
 
 ---
 
@@ -206,29 +222,29 @@ Objetivo: transformar o app em uma experiência mais motivadora.
 
 ## Sistema de níveis
 
-* [ ] Criar XP baseado nos pontos ganhos
+* [x] Criar XP baseado nos pontos ganhos
 
-* [ ] Criar nível do usuário
+* [x] Criar nível do usuário
 
-* [ ] Definir regra de evolução de nível
+* [x] Definir regra de evolução de nível
 
-* [ ] Mostrar nível atual na tela principal
+* [x] Mostrar nível atual na tela principal
 
-* [ ] Mostrar XP atual
+* [x] Mostrar XP atual
 
-* [ ] Mostrar XP necessário para o próximo nível
+* [x] Mostrar XP necessário para o próximo nível
 
 ---
 
 ## Streak
 
-* [ ] Criar contagem de dias seguidos usando o app
+* [x] Criar contagem de dias seguidos usando o app
 
-* [ ] Definir regra para manter streak
+* [x] Definir regra para manter streak
 
-* [ ] Definir regra para perder streak
+* [x] Definir regra para perder streak
 
-* [ ] Mostrar streak atual na tela principal
+* [x] Mostrar streak atual na tela principal
 
 * [ ] Dar bônus por manter streak
 
@@ -236,25 +252,25 @@ Objetivo: transformar o app em uma experiência mais motivadora.
 
 ## Mensagens motivacionais
 
-* [ ] Criar mensagens para início do dia
+* [x] Criar mensagens para início do dia
 
-* [ ] Criar mensagens para metade do progresso
+* [x] Criar mensagens para metade do progresso
 
-* [ ] Criar mensagens para dia completo
+* [x] Criar mensagens para dia completo
 
-* [ ] Criar mensagens quando o usuário perde streak
+* [x] Criar mensagens quando o usuário perde streak
 
-* [ ] Mostrar mensagem motivacional no resumo do dia
+* [x] Mostrar mensagem motivacional no resumo do dia
 
 ---
 
 ## Metas diárias
 
-* [ ] Criar meta diária de pontos
+* [x] Criar meta diária de pontos
 
-* [ ] Mostrar progresso da meta diária
+* [x] Mostrar progresso da meta diária
 
-* [ ] Dar feedback quando a meta diária for concluída
+* [x] Dar feedback quando a meta diária for concluída
 
 ---
 
@@ -264,41 +280,41 @@ Objetivo: permitir que o usuário use os pontos como recompensa real.
 
 ## Recompensas personalizáveis
 
-* [ ] Permitir criar recompensa personalizada
+* [x] Permitir criar recompensa personalizada
 
-* [ ] Definir custo em pontos para cada recompensa
+* [x] Definir custo em pontos para cada recompensa
 
-* [ ] Listar recompensas disponíveis
+* [x] Listar recompensas disponíveis
 
-* [ ] Editar recompensa
+* [x] Editar recompensa
 
-* [ ] Excluir recompensa
+* [x] Excluir recompensa
 
 ---
 
 ## Loja de recompensas
 
-* [ ] Criar tela de loja de recompensas
+* [x] Criar tela de loja de recompensas
 
-* [ ] Permitir resgatar recompensa usando pontos
+* [x] Permitir resgatar recompensa usando pontos
 
-* [ ] Impedir resgate caso o usuário não tenha pontos suficientes
+* [x] Impedir resgate caso o usuário não tenha pontos suficientes
 
-* [ ] Separar pontos totais de pontos disponíveis
+* [x] Separar pontos totais de pontos disponíveis
 
-* [ ] Registrar histórico de recompensas resgatadas
+* [x] Registrar histórico de recompensas resgatadas
 
 ---
 
 ## Histórico de recompensas
 
-* [ ] Salvar data de resgate
+* [x] Salvar data de resgate
 
-* [ ] Salvar nome da recompensa resgatada
+* [x] Salvar nome da recompensa resgatada
 
-* [ ] Salvar custo em pontos da recompensa
+* [x] Salvar custo em pontos da recompensa
 
-* [ ] Exibir histórico de recompensas resgatadas
+* [x] Exibir histórico de recompensas resgatadas
 
 ---
 
@@ -354,9 +370,9 @@ Objetivo: adicionar recursos mais avançados depois que a base estiver estável.
 
 ## Tarefas recorrentes
 
-* [ ] Criar tarefa recorrente diária
+* [x] Criar tarefa recorrente diária
 
-* [ ] Recriar tarefa diária automaticamente
+* [x] Recriar tarefa diária automaticamente
 
 * [ ] Criar tarefa recorrente semanal
 
@@ -364,7 +380,7 @@ Objetivo: adicionar recursos mais avançados depois que a base estiver estável.
 
 * [ ] Permitir editar recorrência
 
-* [ ] Permitir desativar recorrência
+* [x] Permitir desativar recorrência
 
 ---
 
@@ -458,7 +474,7 @@ Objetivo: manter o projeto fácil de evoluir e evitar perda de dados.
 
 * [ ] Criar pasta de dados
 
-* [ ] Evitar deixar toda a lógica no arquivo principal
+* [x] Evitar deixar toda a lógica no arquivo principal
 
 ---
 
@@ -544,23 +560,23 @@ Essas ideias só fazem sentido se o app crescer bastante.
 * [x] Adicionar prioridade
 * [x] Adicionar categoria
 * [x] Criar barra de progresso
-* [ ] Criar histórico diário
-* [ ] Criar reset diário
+* [x] Criar histórico diário
+* [x] Criar reset diário
 
 ## Em seguida
 
-* [ ] Criar sistema de níveis
-* [ ] Criar streak
-* [ ] Criar mensagens motivacionais
-* [ ] Criar metas diárias
+* [x] Criar sistema de níveis
+* [x] Criar streak
+* [x] Criar mensagens motivacionais
+* [x] Criar metas diárias
 
 ## Mais tarde
 
-* [ ] Criar recompensas personalizadas
-* [ ] Criar loja de recompensas
+* [x] Criar recompensas personalizadas
+* [x] Criar loja de recompensas
 * [ ] Criar estatísticas semanais
 * [ ] Criar conquistas
-* [ ] Criar tarefas recorrentes
+* [x] Criar tarefas recorrentes
 
 ---
 

@@ -1,30 +1,54 @@
 # Padrão de Versionamento do Projeto
 
-Este documento define o padrão de versionamento, branches, commits, tags e lançamento de versões deste projeto.
+Este documento define o fluxo simples de versionamento, branches, commits, tags e lançamento de versões deste projeto.
 
-O objetivo é manter o projeto organizado, fácil de evoluir e seguro para desenvolver novas funcionalidades sem quebrar a versão principal.
+O projeto é um app pessoal, então o objetivo é manter o processo leve: trabalhar no dia a dia na `develop` e usar a `main` apenas para versões estáveis.
 
 ---
 
 # 1. Regra principal
 
-Nunca desenvolver diretamente na branch `main`.
+Não desenvolver diretamente na branch `main`.
 
-O fluxo padrão deve ser:
+O fluxo padrão é:
 
 ```text
-branch específica -> develop -> main
+develop -> main
 ```
 
-A `main` deve representar a versão estável do app.
+A `develop` é a branch de trabalho diário.
 
-A `develop` deve representar a versão em desenvolvimento.
+A `main` é a branch estável, usada apenas quando uma versão oficial estiver pronta.
 
-Cada funcionalidade, correção ou melhoria deve ser feita em uma branch separada.
+Branches extras podem ser criadas só em casos específicos, como testes arriscados, mudanças grandes ou quando for útil isolar uma alteração. Para o uso normal do app, trabalhar direto na `develop` é suficiente.
 
 ---
 
 # 2. Branches principais
+
+## `develop`
+
+A branch `develop` representa a versão em desenvolvimento.
+
+Usar a `develop` para:
+
+* criar funcionalidades;
+* corrigir bugs;
+* ajustar interface;
+* refatorar código;
+* atualizar documentação;
+* testar ideias pequenas e seguras.
+
+Antes de começar uma tarefa, conferir:
+
+```bash
+git checkout develop
+git status --short --branch
+```
+
+Se houver mudanças locais, preservar o que já existe e evitar misturar alterações sem necessidade.
+
+---
 
 ## `main`
 
@@ -39,161 +63,47 @@ Só deve receber código que:
 
 Não trabalhar diretamente na `main`.
 
----
-
-## `develop`
-
-A branch `develop` representa a versão em desenvolvimento.
-
-Todas as features, correções e melhorias devem ser integradas primeiro na `develop`.
-
-Quando a `develop` estiver estável, ela pode ser enviada para a `main` como uma nova versão oficial.
+Quando a `develop` estiver estável, ela pode ser integrada na `main` como uma nova versão oficial.
 
 ---
 
-# 3. Branches de funcionalidade
+# 3. Branches extras opcionais
 
-Para criar uma nova funcionalidade, usar o prefixo `feat/`.
+Como o projeto é pessoal, branches por tarefa não são obrigatórias.
 
-Formato:
+Criar uma branch extra apenas quando ajudar de verdade, por exemplo:
+
+* testar uma mudança grande sem bagunçar a `develop`;
+* fazer uma refatoração arriscada;
+* experimentar uma ideia que talvez seja descartada;
+* separar uma correção urgente enquanto a `develop` estiver instável.
+
+Prefixos sugeridos, se uma branch extra for criada:
 
 ```text
-feat/nome-da-feature
+feat/       nova funcionalidade
+fix/        correção de bug
+refactor/   melhoria interna sem mudar comportamento
+docs/       documentação
+chore/      configuração ou manutenção
+style/      ajuste visual ou formatação
+test/       testes
 ```
 
 Exemplos:
 
 ```text
-feat/adicionar-tarefa
-feat/concluir-tarefa
-feat/sistema-pontos
 feat/recompensas
-feat/historico-diario
-feat/streak
-feat/categorias
-feat/prioridade-tarefas
+fix/salvamento-tarefas
+refactor/storage
+docs/versionamento
 ```
 
-Cada branch de feature deve sair da `develop`.
-
-Fluxo:
-
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b feat/nome-da-feature
-```
+Depois de concluir a mudança, integrar a branch extra de volta na `develop`.
 
 ---
 
-# 4. Branches de correção
-
-Para corrigir bugs, usar o prefixo `fix/`.
-
-Formato:
-
-```text
-fix/nome-do-problema
-```
-
-Exemplos:
-
-```text
-fix/tarefa-nao-salva
-fix/pontos-duplicados
-fix/erro-ao-abrir-app
-fix/lista-nao-atualiza
-```
-
----
-
-# 5. Branches de refatoração
-
-Para melhorar código sem alterar comportamento, usar o prefixo `refactor/`.
-
-Formato:
-
-```text
-refactor/nome-da-melhoria
-```
-
-Exemplos:
-
-```text
-refactor/organizar-services
-refactor/separar-storage
-refactor/melhorar-modelo-tarefa
-refactor/organizar-estrutura-pastas
-```
-
-Usar `refactor/` quando a mudança melhora a estrutura interna, mas não adiciona uma funcionalidade visível ao usuário.
-
----
-
-# 6. Branches de documentação
-
-Para documentação, usar o prefixo `docs/`.
-
-Formato:
-
-```text
-docs/nome-da-documentacao
-```
-
-Exemplos:
-
-```text
-docs/criar-readme
-docs/atualizar-roadmap
-docs/documentar-versionamento
-docs/adicionar-changelog
-```
-
----
-
-# 7. Branches de configuração/manutenção
-
-Para configurações, dependências e arquivos auxiliares, usar o prefixo `chore/`.
-
-Formato:
-
-```text
-chore/nome-da-tarefa
-```
-
-Exemplos:
-
-```text
-chore/configurar-gitignore
-chore/criar-requirements
-chore/adicionar-arquivo-version
-chore/organizar-ambiente-projeto
-```
-
----
-
-# 8. Branches de ajuste visual
-
-Para mudanças visuais ou de interface que não alterem regra de negócio, usar o prefixo `style/`.
-
-Formato:
-
-```text
-style/nome-do-ajuste
-```
-
-Exemplos:
-
-```text
-style/melhorar-layout
-style/ajustar-espacamento
-style/padronizar-botoes
-style/melhorar-textos-interface
-```
-
----
-
-# 9. Padrão de commits
+# 4. Padrão de commits
 
 Usar commits pequenos, claros e objetivos.
 
@@ -223,7 +133,7 @@ feat: adiciona sistema de pontos
 fix: corrige salvamento de tarefas concluídas
 fix: corrige duplicação de pontos
 refactor: separa lógica de tarefas em service
-docs: adiciona instruções de instalação
+docs: atualiza versionamento
 chore: configura gitignore
 style: melhora layout da lista de tarefas
 ```
@@ -243,9 +153,9 @@ O histórico do Git deve permitir entender o que foi feito sem precisar abrir to
 
 ---
 
-# 10. Versionamento
+# 5. Versionamento
 
-O projeto deve usar versionamento semântico simples.
+O projeto usa versionamento semântico simples.
 
 Formato:
 
@@ -253,7 +163,7 @@ Formato:
 MAJOR.MINOR.PATCH
 ```
 
-Exemplo:
+Exemplos:
 
 ```text
 v0.1.0
@@ -261,8 +171,6 @@ v0.2.0
 v0.2.1
 v1.0.0
 ```
-
----
 
 ## MAJOR
 
@@ -275,8 +183,6 @@ v1.0.0 -> v2.0.0
 ```
 
 Usar quando houver mudança muito grande na estrutura, arquitetura ou comportamento principal do app.
-
----
 
 ## MINOR
 
@@ -296,8 +202,6 @@ Usar quando adicionar algo importante, como:
 * streak;
 * prioridades;
 * nova tela relevante.
-
----
 
 ## PATCH
 
@@ -320,9 +224,9 @@ Usar para:
 
 ---
 
-# 11. Planejamento de versões do app
+# 6. Planejamento de versões do app
 
-## `v0.1.0` ? MVP básico
+## `v0.1.0` - MVP básico
 
 Primeira versão funcional do app.
 
@@ -334,9 +238,7 @@ Deve conter:
 * ganhar pontos ao concluir tarefas;
 * salvar dados localmente.
 
----
-
-## `v0.2.0` ? Categorias e prioridades
+## `v0.2.0` - Categorias e prioridades
 
 Pode conter:
 
@@ -345,9 +247,7 @@ Pode conter:
 * organização visual melhor da lista;
 * filtro ou separação por tipo de tarefa.
 
----
-
-## `v0.3.0` ? Histórico diário
+## `v0.3.0` - Histórico diário
 
 Pode conter:
 
@@ -356,9 +256,7 @@ Pode conter:
 * visualização do histórico;
 * tela ou seção de progresso diário.
 
----
-
-## `v0.4.0` ? Recompensas
+## `v0.4.0` - Recompensas
 
 Pode conter:
 
@@ -367,9 +265,7 @@ Pode conter:
 * resgate de recompensas;
 * controle de pontos disponíveis.
 
----
-
-## `v0.5.0` ? Streak
+## `v0.5.0` - Streak
 
 Pode conter:
 
@@ -378,9 +274,7 @@ Pode conter:
 * exibição da sequência atual;
 * perda de streak se o usuário não cumprir o mínimo diário.
 
----
-
-## `v1.0.0` ? Primeira versão estável
+## `v1.0.0` - Primeira versão estável
 
 Versão pronta para apresentar como projeto sério.
 
@@ -396,7 +290,7 @@ Deve conter:
 
 ---
 
-# 12. Tags no Git
+# 7. Tags no Git
 
 Sempre que uma versão oficial for finalizada, criar uma tag.
 
@@ -424,7 +318,7 @@ tag = versão oficial
 
 ---
 
-# 13. Arquivo VERSION
+# 8. Arquivo VERSION
 
 O projeto deve ter um arquivo chamado `VERSION` na raiz.
 
@@ -434,7 +328,7 @@ Exemplo de conteúdo:
 0.1.0
 ```
 
-Sempre que uma nova versão for lançada, esse arquivo deve ser atualizado.
+Sempre que uma nova versão oficial for lançada, esse arquivo deve ser atualizado.
 
 Exemplo:
 
@@ -444,7 +338,7 @@ Exemplo:
 
 ---
 
-# 14. Changelog
+# 9. Changelog
 
 O projeto deve ter um arquivo chamado `CHANGELOG.md`.
 
@@ -476,110 +370,57 @@ Formato recomendado:
 
 ---
 
-# 15. Estrutura recomendada do projeto
+# 10. Fluxo de trabalho padrão
 
-Estrutura base recomendada:
-
-```text
-rotina-diaria/
-?
-??? app/
-?   ??? main.py
-?   ??? models/
-?   ??? services/
-?   ??? storage/
-?   ??? ui/
-?
-??? data/
-?   ??? tarefas.json
-?
-??? docs/
-?   ??? roadmap.md
-?   ??? versionamento.md
-?
-??? README.md
-??? CHANGELOG.md
-??? VERSION
-??? requirements.txt
-??? .gitignore
-```
-
----
-
-# 16. Fluxo de trabalho padrão
-
-## 1. Atualizar a `develop`
+## 1. Trabalhar na `develop`
 
 ```bash
 git checkout develop
+git status --short --branch
+```
+
+Se quiser buscar atualizações do GitHub:
+
+```bash
 git pull origin develop
 ```
 
----
+## 2. Fazer alterações
 
-## 2. Criar uma branch nova
-
-Para funcionalidade:
-
-```bash
-git checkout -b feat/nome-da-feature
-```
-
-Para correção:
-
-```bash
-git checkout -b fix/nome-do-problema
-```
-
-Para refatoração:
-
-```bash
-git checkout -b refactor/nome-da-refatoracao
-```
-
-Para documentação:
-
-```bash
-git checkout -b docs/nome-da-documentacao
-```
-
----
-
-## 3. Fazer alterações no código
-
-Fazer mudanças pequenas, organizadas e relacionadas ao objetivo da branch.
+Fazer mudanças pequenas, organizadas e relacionadas ao objetivo atual.
 
 Evitar misturar muitas coisas diferentes no mesmo commit.
 
----
+## 3. Verificar
+
+Antes de finalizar uma mudança, rodar uma verificação adequada ao tipo de alteração.
+
+Exemplos:
+
+```bash
+python -m compileall .
+```
+
+```bash
+python web_app.py
+```
+
+Para documentação, revisar o arquivo alterado já costuma ser suficiente.
 
 ## 4. Commitar alterações
 
 ```bash
 git add .
-git commit -m "feat: adiciona sistema de pontos"
+git commit -m "tipo: descrição curta"
 ```
 
----
-
-## 5. Voltar para `develop`
+Exemplo:
 
 ```bash
-git checkout develop
-git pull origin develop
+git commit -m "docs: simplifica fluxo de versionamento"
 ```
 
----
-
-## 6. Fazer merge da branch
-
-```bash
-git merge feat/nome-da-feature
-```
-
----
-
-## 7. Enviar para o GitHub
+## 5. Enviar para o GitHub
 
 ```bash
 git push origin develop
@@ -587,7 +428,7 @@ git push origin develop
 
 ---
 
-# 17. Lançamento de nova versão
+# 11. Lançamento de nova versão
 
 Quando a `develop` estiver estável e pronta para virar uma versão oficial:
 
@@ -611,59 +452,51 @@ git push origin main
 git push origin v0.1.0
 ```
 
+Depois do lançamento, voltar para a `develop`:
+
+```bash
+git checkout develop
+```
+
 ---
 
-# 18. Regras para o Codex seguir
+# 12. Regras para o Codex seguir
 
 Ao trabalhar neste projeto, o Codex deve seguir estas regras:
 
 1. Não modificar diretamente a branch `main`.
 
-2. Sempre sugerir ou criar uma branch específica para a tarefa atual.
+2. Usar a `develop` como branch padrão de trabalho.
 
-3. Usar nomes de branches claros, seguindo os prefixos:
+3. Não criar branch por tarefa automaticamente, a menos que o usuário peça ou que a mudança seja grande, arriscada ou experimental.
 
-```text
-feat/
-fix/
-refactor/
-docs/
-chore/
-style/
-test/
-```
+4. Manter alterações pequenas e relacionadas ao objetivo atual.
 
-4. Não misturar funcionalidades diferentes na mesma alteração.
+5. Preservar mudanças locais já existentes no workspace.
 
-5. Fazer commits pequenos e objetivos.
+6. Não reverter arquivos sem pedido explícito.
 
-6. Usar mensagens de commit no padrão:
+7. Fazer commits pequenos e objetivos quando o usuário pedir commit.
+
+8. Usar mensagens de commit no padrão:
 
 ```text
 tipo: descrição curta da alteração
 ```
 
-7. Atualizar o `CHANGELOG.md` quando a alteração fizer parte de uma versão oficial.
+9. Atualizar o `CHANGELOG.md` quando a alteração fizer parte de uma versão oficial.
 
-8. Atualizar o arquivo `VERSION` apenas quando uma nova versão oficial for preparada.
+10. Atualizar o arquivo `VERSION` apenas quando uma nova versão oficial for preparada.
 
-9. Não criar tag para qualquer commit. Tags devem ser usadas somente para versões oficiais.
+11. Não criar tag para qualquer commit. Tags devem ser usadas somente para versões oficiais.
 
-10. Antes de preparar uma versão, garantir que o app esteja minimamente funcional.
+12. Antes de preparar uma versão, garantir que o app esteja minimamente funcional.
 
-11. Se a mudança for experimental, manter fora da `main`.
-
-12. Se a tarefa for grande, dividir em etapas menores.
-
-13. Ao sugerir mudanças, explicar em qual tipo de branch elas deveriam entrar.
-
-14. Ao finalizar uma feature, orientar o merge para `develop`.
-
-15. Ao preparar release, orientar o merge de `develop` para `main`.
+13. Se a mudança for experimental ou arriscada, sugerir uma branch extra antes de começar.
 
 ---
 
-# 19. Quando criar nova versão
+# 13. Quando criar nova versão
 
 Criar nova versão quando houver um conjunto de mudanças relevantes e estáveis.
 
@@ -690,21 +523,16 @@ v0.2.0 -> v0.2.1
 
 ---
 
-# 20. Resumo final
+# 14. Resumo final
 
 Modelo de branches:
 
 ```text
-main         -> versão estável
-develop      -> versão em desenvolvimento
-feat/...     -> funcionalidades novas
-fix/...      -> correções
-refactor/... -> melhorias internas
-docs/...     -> documentação
-chore/...    -> configuração/manutenção
-style/...    -> ajustes visuais
-test/...     -> testes
+develop -> trabalho diário e desenvolvimento
+main    -> versão estável e oficial
 ```
+
+Branches extras são opcionais e só entram quando ajudarem de verdade.
 
 Modelo de versões:
 
@@ -718,6 +546,6 @@ v1.0.0 = versão estável e apresentável
 Regra mais importante:
 
 ```text
-Não trabalhar direto na main.
-Sempre desenvolver em branch específica, integrar na develop e só depois lançar na main.
+Trabalhar na develop no dia a dia.
+Levar para main apenas quando for lançar uma versão estável.
 ```

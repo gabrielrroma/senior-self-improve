@@ -1,6 +1,7 @@
 const state = {
   data: null,
   filter: "Todas",
+  activeView: localStorage.getItem("rotina-active-view") || "routine",
   editingTaskId: null,
   editingRewardId: null,
   toastTimer: null,
@@ -37,6 +38,7 @@ const elements = {
   rewardTitle: document.querySelector("#rewardTitle"),
   rewardCost: document.querySelector("#rewardCost"),
   rewardDescription: document.querySelector("#rewardDescription"),
+  rewardImageUrl: document.querySelector("#rewardImageUrl"),
   submitRewardButton: document.querySelector("#submitRewardButton"),
   clearRewardButton: document.querySelector("#clearRewardButton"),
   filterButtons: document.querySelector("#filterButtons"),
@@ -49,6 +51,8 @@ const elements = {
   rewardTemplate: document.querySelector("#rewardTemplate"),
   themeToggle: document.querySelector("#themeToggle"),
   toast: document.querySelector("#toast"),
+  navTabs: document.querySelectorAll("[data-nav-view]"),
+  tabPanels: document.querySelectorAll("[data-view-panel]"),
 };
 
 async function requestJson(path, options = {}) {
@@ -289,6 +293,7 @@ function renderRewards(rewards, wallet) {
   const cards = rewards.map((reward) => {
     const fragment = elements.rewardTemplate.content.cloneNode(true);
     const card = fragment.querySelector(".reward-card");
+    const image = fragment.querySelector(".reward-image");
     const title = fragment.querySelector("h3");
     const description = fragment.querySelector(".reward-description");
     const meta = fragment.querySelector(".reward-meta");
@@ -297,6 +302,7 @@ function renderRewards(rewards, wallet) {
     const deleteButton = fragment.querySelector('[data-reward-action="delete"]');
 
     card.dataset.id = reward.id;
+    renderRewardImage(image, reward);
     title.textContent = reward.title;
     description.textContent = reward.description || "";
     redeemButton.disabled = !reward.can_redeem;
@@ -316,6 +322,35 @@ function renderRewards(rewards, wallet) {
   });
 
   elements.rewardList.replaceChildren(...cards);
+}
+
+function renderRewardImage(container, reward) {
+  const fallback = document.createElement("span");
+  fallback.textContent = getRewardInitial(reward.title);
+  container.replaceChildren(fallback);
+  container.classList.remove("has-image");
+
+  if (!reward.image_url) {
+    return;
+  }
+
+  const image = document.createElement("img");
+  image.alt = "";
+  image.loading = "lazy";
+  image.addEventListener("load", () => {
+    container.classList.add("has-image");
+  });
+  image.addEventListener("error", () => {
+    image.remove();
+    container.classList.remove("has-image");
+  });
+  image.src = reward.image_url;
+  container.prepend(image);
+}
+
+function getRewardInitial(title) {
+  const normalizedTitle = String(title || "").trim();
+  return normalizedTitle ? normalizedTitle[0].toUpperCase() : "?";
 }
 
 function renderRedemptions(redemptions) {
@@ -369,6 +404,7 @@ function editTask(taskId) {
     showToast("A tarefa selecionada nao existe mais.");
     return;
   }
+  setActiveView("routine");
   state.editingTaskId = taskId;
   elements.formTitle.textContent = "Editar tarefa";
   elements.submitTaskButton.textContent = "Salvar";
@@ -385,12 +421,14 @@ function editReward(rewardId) {
     showToast("A recompensa selecionada nao existe mais.");
     return;
   }
+  setActiveView("rewards");
   state.editingRewardId = rewardId;
   elements.rewardFormTitle.textContent = "Editar recompensa";
   elements.submitRewardButton.textContent = "Salvar";
   elements.rewardTitle.value = reward.title;
   elements.rewardCost.value = reward.cost;
   elements.rewardDescription.value = reward.description || "";
+  elements.rewardImageUrl.value = reward.image_url || "";
   elements.rewardTitle.focus();
 }
 
@@ -425,6 +463,7 @@ async function submitReward(event) {
     title: elements.rewardTitle.value.trim(),
     cost: elements.rewardCost.value,
     description: elements.rewardDescription.value.trim(),
+    image_url: elements.rewardImageUrl.value.trim(),
   };
 
   const path = state.editingRewardId ? `/api/rewards/${state.editingRewardId}` : "/api/rewards";
@@ -514,6 +553,36 @@ function setupTheme() {
   });
 }
 
+function setupNavigation() {
+  for (const tab of elements.navTabs) {
+    tab.addEventListener("click", () => {
+      setActiveView(tab.dataset.navView);
+    });
+  }
+  setActiveView(state.activeView);
+}
+
+function setActiveView(view) {
+  const panels = Array.from(elements.tabPanels);
+  const tabs = Array.from(elements.navTabs);
+  const nextView = panels.some((panel) => panel.dataset.viewPanel === view) ? view : "routine";
+
+  state.activeView = nextView;
+  localStorage.setItem("rotina-active-view", nextView);
+
+  for (const tab of tabs) {
+    const isActive = tab.dataset.navView === nextView;
+    tab.classList.toggle("active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  }
+
+  for (const panel of panels) {
+    const isActive = panel.dataset.viewPanel === nextView;
+    panel.hidden = !isActive;
+    panel.classList.toggle("active", isActive);
+  }
+}
+
 function showToast(message) {
   elements.toast.textContent = message || "Pronto";
   elements.toast.classList.add("visible");
@@ -532,5 +601,6 @@ elements.taskList.addEventListener("click", handleTaskAction);
 elements.rewardList.addEventListener("click", handleRewardAction);
 
 setupTheme();
+setupNavigation();
 resetRewardForm();
 loadState(true);

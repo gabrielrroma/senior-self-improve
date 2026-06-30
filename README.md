@@ -15,7 +15,15 @@ Webapp local para acompanhar tarefas do dia e recompensas por conclusao.
 
 ## Dados locais
 
-O app cria `data/tasks.json` automaticamente para salvar tarefas, pontos, historico e recompensas. A pasta `data/` fica fora do Git.
+O app cria arquivos JSON separados dentro de `data/` para salvar os dados locais:
+
+- `profile.json`: perfil local e carteira de pontos
+- `tasks.json`: dia atual e tarefas
+- `rewards.json`: recompensas e resgates
+- `history.json`: historico e dias arquivados
+- `settings.json`: configuracoes e gamificacao
+
+A pasta `data/` fica fora do Git. Se existir um `data/tasks.json` antigo com tudo junto, o app ainda consegue ler e migrar os dados para os arquivos separados no proximo salvamento.
 
 ## Funcionalidades
 
@@ -23,4 +31,4 @@ O app cria `data/tasks.json` automaticamente para salvar tarefas, pontos, histor
 - marcar tarefas como concluidas
 - somar pontos por prioridade
 - acompanhar meta diaria, nivel, XP, streak e historico
-- criar e resgatar recompensas usando pontos disponiveis
+- criar e resgatar recompensas com imagem opcional usando pontos disponiveis

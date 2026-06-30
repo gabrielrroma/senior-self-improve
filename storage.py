@@ -1,20 +1,54 @@
 import json
 import os
+import shutil
 from uuid import uuid4
 
 from date_utils import to_int, today_key
-from reward_service import normalize_reward_cost
+from reward_service import normalize_reward_cost, normalize_reward_image_url
 from routine_service import build_task_summary, default_gamification, normalize_gamification
-from settings import CATEGORIES, DATA_DIR, DATA_FILE, PRIORITY_POINTS
+from settings import CATEGORIES, DATA_DIR, DATA_FILE, DATA_FILES, PRIORITY_POINTS
+
+
+SCHEMA_VERSION = 1
 
 
 class RoutineStorage:
-    def __init__(self, data_dir=DATA_DIR, data_file=DATA_FILE):
+    def __init__(self, data_dir=DATA_DIR, data_file=DATA_FILE, data_files=None):
         self.data_dir = data_dir
-        self.data_file = data_file
+        self.data_files = self.build_data_files(data_dir, data_files)
+
+        uses_default_data_file = data_file == DATA_FILE
+        if not uses_default_data_file:
+            self.data_files["tasks"] = data_file
+
+        self.data_file = self.data_files["tasks"]
+        self.legacy_data_file = self.data_file if uses_default_data_file else data_file
+        self.loaded_legacy_file = False
+
+    def build_data_files(self, data_dir, data_files):
+        default_filenames = {
+            key: os.path.basename(path)
+            for key, path in DATA_FILES.items()
+        }
+        files = {
+            key: os.path.join(data_dir, filename)
+            for key, filename in default_filenames.items()
+        }
+        if data_files:
+            files.update(data_files)
+        return files
+
+    def default_profile(self):
+        return {
+            "name": "",
+            "avatar": "spark",
+            "theme": "system",
+            "accent_color": "green",
+        }
 
     def empty_state(self):
         return {
+            "profile": self.default_profile(),
             "tasks": [],
             "history": [],
             "archived_days": [],
@@ -28,18 +62,143 @@ class RoutineStorage:
 
     def load(self):
         os.makedirs(self.data_dir, exist_ok=True)
+        self.loaded_legacy_file = False
 
-        if not os.path.exists(self.data_file):
-            return self.empty_state(), None
+        has_split_files = any(
+            os.path.exists(path)
+            for key, path in self.data_files.items()
+            if key != "tasks"
+        )
+
+        if not has_split_files and os.path.exists(self.legacy_data_file):
+            data, error = self.read_json_file(self.legacy_data_file)
+            if error:
+                return self.empty_state(), "Nao foi possivel carregar os dados salvos."
+            if self.is_legacy_payload(data):
+                self.loaded_legacy_file = True
+                return self.normalize_state(data), None
+
+        return self.load_split_state()
+
+    def load_split_state(self):
+        payloads = {}
+        failed_files = []
+
+        for key, path in self.data_files.items():
+            payload, error = self.read_json_file(path)
+            if error:
+                failed_files.append(os.path.basename(path))
+                payload = {}
+            payloads[key] = payload
+
+        tasks_payload = payloads.get("tasks", {})
+        legacy_fallback = tasks_payload if self.is_legacy_payload(tasks_payload) else {}
+        if legacy_fallback:
+            self.loaded_legacy_file = True
+
+        state = self.normalize_state(self.merge_split_payloads(payloads, legacy_fallback))
+        if failed_files:
+            filenames = ", ".join(failed_files)
+            return state, f"Nao foi possivel carregar alguns arquivos de dados: {filenames}."
+        return state, None
+
+    def read_json_file(self, path):
+        if not os.path.exists(path):
+            return {}, None
 
         try:
-            with open(self.data_file, "r", encoding="utf-8") as file:
+            with open(path, "r", encoding="utf-8") as file:
                 data = json.load(file)
         except (json.JSONDecodeError, OSError):
-            return self.empty_state(), "Nao foi possivel carregar os dados salvos."
+            return {}, "load_error"
 
+        if not isinstance(data, (dict, list)):
+            return {}, "load_error"
+
+        return data, None
+
+    def merge_split_payloads(self, payloads, legacy_fallback):
+        legacy_fallback = self.as_dict(legacy_fallback)
+        profile_payload = self.as_dict(payloads.get("profile"))
+        tasks_payload = payloads.get("tasks", {})
+        rewards_payload = payloads.get("rewards", {})
+        history_payload = payloads.get("history", {})
+        settings_payload = self.as_dict(payloads.get("settings"))
+
+        tasks_data = self.as_dict(tasks_payload)
+        wallet = self.as_dict(profile_payload.get("wallet"))
+
+        settings_data = self.as_dict(settings_payload.get("settings"))
+        if not settings_data:
+            settings_data = settings_payload
+
+        return {
+            "profile": profile_payload.get("profile", legacy_fallback.get("profile", profile_payload)),
+            "current_day": tasks_data.get(
+                "current_day",
+                legacy_fallback.get("current_day", legacy_fallback.get("last_active_date", "")),
+            ),
+            "tasks": self.section_list(tasks_payload, "tasks", legacy_fallback.get("tasks", [])),
+            "history": self.section_list(history_payload, "history", legacy_fallback.get("history", [])),
+            "archived_days": self.section_list(
+                history_payload,
+                "archived_days",
+                legacy_fallback.get("archived_days", []),
+                allow_raw_list=False,
+            ),
+            "gamification": settings_data.get("gamification", legacy_fallback.get("gamification", {})),
+            "points_total": wallet.get(
+                "points_total",
+                profile_payload.get(
+                    "points_total",
+                    legacy_fallback.get("points_total", legacy_fallback.get("points", 0)),
+                ),
+            ),
+            "points_spent": wallet.get(
+                "points_spent",
+                profile_payload.get("points_spent", legacy_fallback.get("points_spent")),
+            ),
+            "rewards": self.section_list(rewards_payload, "rewards", legacy_fallback.get("rewards", [])),
+            "reward_redemptions": self.section_list(
+                rewards_payload,
+                "reward_redemptions",
+                legacy_fallback.get("reward_redemptions", legacy_fallback.get("redemptions", [])),
+                allow_raw_list=False,
+            ),
+        }
+
+    def is_legacy_payload(self, data):
+        if not isinstance(data, dict):
+            return False
+
+        legacy_keys = (
+            "history",
+            "archived_days",
+            "gamification",
+            "points",
+            "points_total",
+            "points_spent",
+            "rewards",
+            "reward_redemptions",
+            "redemptions",
+        )
+        return any(key in data for key in legacy_keys)
+
+    def as_dict(self, value):
+        return value if isinstance(value, dict) else {}
+
+    def section_list(self, payload, section, fallback=None, allow_raw_list=True):
+        if allow_raw_list and isinstance(payload, list):
+            return payload
+        if isinstance(payload, dict) and section in payload:
+            value = payload.get(section)
+            return value if isinstance(value, list) else []
+        return fallback if isinstance(fallback, list) else []
+
+    def normalize_state(self, data):
         state = self.empty_state()
-        state["points_total"] = to_int(data.get("points_total", data.get("points", 0)))
+        state["profile"] = self.normalize_profile(data.get("profile", {}))
+        state["points_total"] = max(0, to_int(data.get("points_total", data.get("points", 0))))
         raw_points_spent = data.get("points_spent")
         state["points_spent"] = max(0, to_int(raw_points_spent, 0))
         state["gamification"] = normalize_gamification(data.get("gamification", {}))
@@ -86,7 +245,7 @@ class RoutineStorage:
         )
         if raw_points_spent is None:
             state["points_spent"] = sum(entry["cost"] for entry in state["reward_redemptions"])
-        return state, None
+        return state
 
     def save(
         self,
@@ -99,29 +258,102 @@ class RoutineStorage:
         rewards=None,
         reward_redemptions=None,
         points_spent=0,
+        profile=None,
     ):
         os.makedirs(self.data_dir, exist_ok=True)
-        payload = {
-            "current_day": current_day,
-            "tasks": tasks,
-            "history": history,
-            "archived_days": archived_days,
-            "gamification": gamification,
-            "points_total": points_total,
-            "points_spent": max(0, to_int(points_spent)),
-            "rewards": rewards or [],
-            "reward_redemptions": reward_redemptions or [],
+
+        backup_error = self.backup_legacy_file_if_needed()
+        if backup_error:
+            return backup_error
+
+        payloads = {
+            "profile": {
+                "schema_version": SCHEMA_VERSION,
+                "profile": self.normalize_profile(profile or {}),
+                "wallet": {
+                    "points_total": max(0, to_int(points_total)),
+                    "points_spent": max(0, to_int(points_spent)),
+                },
+            },
+            "tasks": {
+                "schema_version": SCHEMA_VERSION,
+                "current_day": current_day,
+                "tasks": tasks,
+            },
+            "rewards": {
+                "schema_version": SCHEMA_VERSION,
+                "rewards": rewards or [],
+                "reward_redemptions": reward_redemptions or [],
+            },
+            "history": {
+                "schema_version": SCHEMA_VERSION,
+                "history": history,
+                "archived_days": archived_days,
+            },
+            "settings": {
+                "schema_version": SCHEMA_VERSION,
+                "gamification": normalize_gamification(gamification),
+            },
         }
 
-        temp_file = f"{self.data_file}.tmp"
+        for key, payload in payloads.items():
+            error = self.write_json_file(self.data_files[key], payload)
+            if error:
+                return error
+
+        self.loaded_legacy_file = False
+        return None
+
+    def backup_legacy_file_if_needed(self):
+        if not self.loaded_legacy_file:
+            return None
+
+        if not os.path.exists(self.legacy_data_file):
+            return None
+
+        if os.path.abspath(self.legacy_data_file) != os.path.abspath(self.data_files["tasks"]):
+            return None
+
+        backup_file = f"{self.legacy_data_file}.legacy.bak"
+        if os.path.exists(backup_file):
+            return None
+
+        try:
+            shutil.copy2(self.legacy_data_file, backup_file)
+        except OSError as error:
+            return f"Nao foi possivel criar backup do JSON antigo.\n\n{error}"
+
+        return None
+
+    def write_json_file(self, path, payload):
+        directory = os.path.dirname(path)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
+
+        temp_file = f"{path}.tmp"
         try:
             with open(temp_file, "w", encoding="utf-8") as file:
                 json.dump(payload, file, ensure_ascii=False, indent=2)
-            os.replace(temp_file, self.data_file)
+            os.replace(temp_file, path)
         except OSError as error:
-            return f"Nao foi possivel salvar os dados.\n\n{error}"
+            return f"Nao foi possivel salvar {os.path.basename(path)}.\n\n{error}"
 
         return None
+
+    def normalize_profile(self, raw_profile):
+        profile = self.default_profile()
+        if not isinstance(raw_profile, dict):
+            return profile
+
+        name = str(raw_profile.get("name", profile["name"])).strip()
+        profile["name"] = name
+
+        for key in ("avatar", "theme", "accent_color"):
+            value = str(raw_profile.get(key, profile[key])).strip()
+            if value:
+                profile[key] = value
+
+        return profile
 
     def infer_saved_day(self, data):
         saved_day = str(data.get("current_day", data.get("last_active_date", ""))).strip()
@@ -253,6 +485,7 @@ class RoutineStorage:
             "id": raw_reward.get("id") or uuid4().hex,
             "title": title,
             "description": str(raw_reward.get("description", "")).strip(),
+            "image_url": normalize_reward_image_url(raw_reward.get("image_url", raw_reward.get("image", ""))),
             "cost": normalize_reward_cost(raw_reward.get("cost", raw_reward.get("points_cost", 10))),
             "created_at": raw_reward.get("created_at") or today_key(),
         }

@@ -10,19 +10,25 @@ def normalize_reward_cost(value, default=10):
     return max(MIN_REWARD_COST, to_int(value, default))
 
 
-def create_reward(title, cost, description=""):
+def normalize_reward_image_url(value):
+    return str(value or "").strip()
+
+
+def create_reward(title, cost, description="", image_url=""):
     return {
         "id": uuid4().hex,
         "title": title,
         "description": description,
+        "image_url": normalize_reward_image_url(image_url),
         "cost": normalize_reward_cost(cost),
         "created_at": today_key(),
     }
 
 
-def update_reward(reward, title, cost, description=""):
+def update_reward(reward, title, cost, description="", image_url=""):
     reward["title"] = title
     reward["description"] = description
+    reward["image_url"] = normalize_reward_image_url(image_url)
     reward["cost"] = normalize_reward_cost(cost, reward.get("cost", 10))
 
 

@@ -76,7 +76,7 @@ button:disabled {
   justify-content: space-between;
   gap: 16px;
   min-height: 72px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .topbar h1,
@@ -96,6 +96,41 @@ button:disabled {
   margin: 0 0 6px;
   color: var(--muted);
   font-size: 14px;
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.nav-tab {
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  padding: 0 16px;
+  font-weight: 800;
+}
+
+.nav-tab:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.nav-tab.active {
+  background: var(--text);
+  color: var(--surface);
+}
+
+.tab-view[hidden] {
+  display: none;
 }
 
 .metrics-grid {
@@ -157,6 +192,13 @@ button:disabled {
   align-items: start;
 }
 
+.rewards-workspace {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
 .side-stack {
   display: grid;
   gap: 16px;
@@ -210,6 +252,10 @@ button:disabled {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  margin-top: 12px;
+}
+
+.field-grid + .field {
   margin-top: 12px;
 }
 
@@ -548,7 +594,7 @@ select:focus {
 
 .reward-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
   min-height: 104px;
@@ -556,6 +602,35 @@ select:focus {
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
+}
+
+.reward-image {
+  display: grid;
+  width: 88px;
+  height: 88px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface-soft));
+  color: var(--primary-strong);
+  font-size: 30px;
+  font-weight: 850;
+}
+
+.reward-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reward-image.has-image span {
+  display: none;
+}
+
+.reward-content {
+  min-width: 0;
 }
 
 .reward-card h3 {
@@ -664,6 +739,10 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
+  .rewards-workspace {
+    grid-template-columns: 1fr;
+  }
+
   .tasks-panel,
   .rewards-panel {
     min-height: 420px;
@@ -688,6 +767,14 @@ select:focus {
   .panel-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .main-nav {
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    flex: 1 0 auto;
   }
 
   .topbar h1 {
@@ -717,6 +804,11 @@ select:focus {
 
   .reward-card {
     grid-template-columns: 1fr;
+  }
+
+  .reward-image {
+    width: 100%;
+    height: 160px;
   }
 
   .reward-actions {

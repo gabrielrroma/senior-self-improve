@@ -7,9 +7,16 @@ Instrucoes para agentes trabalhando neste projeto.
 - Leia `VERSIONAMENTO.md`.
 - Confira `git status --short --branch`.
 - Nao trabalhe diretamente na branch `main`.
-- Crie uma branch especifica para a tarefa atual antes de editar codigo.
+- Use a branch `develop` como branch padrao de trabalho.
+- Nao crie branch especifica por tarefa automaticamente.
 
 ## Padrao de branches
+
+- `develop` para desenvolvimento do dia a dia.
+- `main` para versoes estaveis e oficiais.
+- Branches extras sao opcionais e devem ser usadas apenas quando ajudarem de verdade, como em mudancas grandes, arriscadas ou experimentais.
+
+Se uma branch extra for necessaria, use prefixos claros:
 
 - `feat/...` para funcionalidades novas.
 - `fix/...` para correcoes.

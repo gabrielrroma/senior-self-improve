@@ -16,6 +16,31 @@
         <button class="ghost-button" id="themeToggle" type="button">Modo escuro</button>
       </header>
 
+      <nav class="main-nav" aria-label="Navegacao principal" role="tablist">
+        <button
+          class="nav-tab active"
+          id="routineTab"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="routineView"
+          data-nav-view="routine"
+        >
+          Rotina
+        </button>
+        <button
+          class="nav-tab"
+          id="rewardsTab"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="rewardsView"
+          data-nav-view="rewards"
+        >
+          Recompensas
+        </button>
+      </nav>
+
       <main>
         <section class="metrics-grid" aria-label="Resumo do dia">
           <article class="metric-card">
@@ -45,102 +70,115 @@
           </article>
         </section>
 
-        <section class="workspace-grid">
-          <aside class="side-stack">
-            <section class="tool-panel">
-              <div class="panel-heading">
-                <h2 id="formTitle">Nova tarefa</h2>
-              </div>
-              <form id="taskForm" autocomplete="off">
-                <label class="field">
-                  <span>Tarefa</span>
-                  <input id="taskTitle" name="title" type="text" maxlength="120" required />
-                </label>
-
-                <div class="field-grid">
-                  <label class="field">
-                    <span>Prioridade</span>
-                    <select id="taskPriority" name="priority"></select>
-                  </label>
-                  <label class="field">
-                    <span>Categoria</span>
-                    <select id="taskCategory" name="category"></select>
-                  </label>
+        <section class="tab-view active" id="routineView" role="tabpanel" aria-labelledby="routineTab" data-view-panel="routine">
+          <section class="workspace-grid">
+            <aside class="side-stack">
+              <section class="tool-panel">
+                <div class="panel-heading">
+                  <h2 id="formTitle">Nova tarefa</h2>
                 </div>
-
-                <label class="check-field">
-                  <input id="taskPinned" name="pinned" type="checkbox" />
-                  <span>Missao fixa</span>
-                </label>
-
-                <div class="button-row">
-                  <button class="primary-button" id="submitTaskButton" type="submit">Adicionar</button>
-                  <button class="ghost-button" id="clearTaskButton" type="button">Limpar</button>
-                </div>
-              </form>
-            </section>
-
-            <section class="tool-panel">
-              <div class="panel-heading">
-                <h2>Meta diaria</h2>
-                <strong id="streakMetric">0 dias</strong>
-              </div>
-              <form class="goal-form" id="goalForm">
-                <label class="field">
-                  <span>Pontos da meta</span>
-                  <input id="dailyGoalInput" name="daily_goal_points" type="number" step="5" />
-                </label>
-                <button class="ghost-button" type="submit">Salvar</button>
-              </form>
-              <div class="meter wide"><span id="goalProgressBar"></span></div>
-              <p class="support-text" id="motivationText">Comece com uma tarefa simples.</p>
-            </section>
-
-            <section class="tool-panel">
-              <div class="panel-heading">
-                <h2 id="rewardFormTitle">Nova recompensa</h2>
-              </div>
-              <form id="rewardForm" autocomplete="off">
-                <label class="field">
-                  <span>Recompensa</span>
-                  <input id="rewardTitle" name="title" type="text" maxlength="120" required />
-                </label>
-
-                <div class="field-grid">
+                <form id="taskForm" autocomplete="off">
                   <label class="field">
-                    <span>Custo</span>
-                    <input id="rewardCost" name="cost" type="number" min="1" step="5" required />
+                    <span>Tarefa</span>
+                    <input id="taskTitle" name="title" type="text" maxlength="120" required />
                   </label>
+
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Prioridade</span>
+                      <select id="taskPriority" name="priority"></select>
+                    </label>
+                    <label class="field">
+                      <span>Categoria</span>
+                      <select id="taskCategory" name="category"></select>
+                    </label>
+                  </div>
+
+                  <label class="check-field">
+                    <input id="taskPinned" name="pinned" type="checkbox" />
+                    <span>Missao fixa</span>
+                  </label>
+
+                  <div class="button-row">
+                    <button class="primary-button" id="submitTaskButton" type="submit">Adicionar</button>
+                    <button class="ghost-button" id="clearTaskButton" type="button">Limpar</button>
+                  </div>
+                </form>
+              </section>
+
+              <section class="tool-panel">
+                <div class="panel-heading">
+                  <h2>Meta diaria</h2>
+                  <strong id="streakMetric">0 dias</strong>
+                </div>
+                <form class="goal-form" id="goalForm">
                   <label class="field">
-                    <span>Detalhe</span>
-                    <input id="rewardDescription" name="description" type="text" maxlength="160" />
+                    <span>Pontos da meta</span>
+                    <input id="dailyGoalInput" name="daily_goal_points" type="number" step="5" />
                   </label>
+                  <button class="ghost-button" type="submit">Salvar</button>
+                </form>
+                <div class="meter wide"><span id="goalProgressBar"></span></div>
+                <p class="support-text" id="motivationText">Comece com uma tarefa simples.</p>
+              </section>
+
+              <section class="tool-panel">
+                <div class="panel-heading">
+                  <h2>Historico</h2>
+                  <span id="bestStreakMetric">Melhor: 0</span>
                 </div>
+                <div class="history-list" id="historyList"></div>
+              </section>
+            </aside>
 
-                <div class="button-row">
-                  <button class="primary-button" id="submitRewardButton" type="submit">Adicionar</button>
-                  <button class="ghost-button" id="clearRewardButton" type="button">Limpar</button>
+            <section class="right-stack">
+              <section class="tasks-panel">
+                <div class="task-toolbar">
+                  <h2>Tarefas</h2>
+                  <div class="segmented-control" id="filterButtons" role="tablist"></div>
                 </div>
-              </form>
+                <div class="task-list" id="taskList"></div>
+              </section>
             </section>
+          </section>
+        </section>
 
-            <section class="tool-panel">
-              <div class="panel-heading">
-                <h2>Historico</h2>
-                <span id="bestStreakMetric">Melhor: 0</span>
-              </div>
-              <div class="history-list" id="historyList"></div>
-            </section>
-          </aside>
+        <section class="tab-view" id="rewardsView" role="tabpanel" aria-labelledby="rewardsTab" data-view-panel="rewards" hidden>
+          <section class="rewards-workspace">
+            <aside class="side-stack">
+              <section class="tool-panel">
+                <div class="panel-heading">
+                  <h2 id="rewardFormTitle">Nova recompensa</h2>
+                </div>
+                <form id="rewardForm" autocomplete="off">
+                  <label class="field">
+                    <span>Recompensa</span>
+                    <input id="rewardTitle" name="title" type="text" maxlength="120" required />
+                  </label>
 
-          <section class="right-stack">
-            <section class="tasks-panel">
-              <div class="task-toolbar">
-                <h2>Tarefas</h2>
-                <div class="segmented-control" id="filterButtons" role="tablist"></div>
-              </div>
-              <div class="task-list" id="taskList"></div>
-            </section>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Custo</span>
+                      <input id="rewardCost" name="cost" type="number" min="1" step="5" required />
+                    </label>
+                    <label class="field">
+                      <span>Detalhe</span>
+                      <input id="rewardDescription" name="description" type="text" maxlength="160" />
+                    </label>
+                  </div>
+
+                  <label class="field">
+                    <span>Imagem</span>
+                    <input id="rewardImageUrl" name="image_url" type="text" maxlength="500" placeholder="https://... ou /images/recompensa.jpg" />
+                  </label>
+
+                  <div class="button-row">
+                    <button class="primary-button" id="submitRewardButton" type="submit">Adicionar</button>
+                    <button class="ghost-button" id="clearRewardButton" type="button">Limpar</button>
+                  </div>
+                </form>
+              </section>
+            </aside>
 
             <section class="rewards-panel">
               <div class="task-toolbar">
@@ -185,7 +223,8 @@
 
     <template id="rewardTemplate">
       <article class="reward-card">
-        <div>
+        <div class="reward-image" aria-hidden="true"></div>
+        <div class="reward-content">
           <h3></h3>
           <p class="reward-description"></p>
           <div class="reward-meta"></div>
