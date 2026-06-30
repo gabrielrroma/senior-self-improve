@@ -31,4 +31,5 @@ A pasta `data/` fica fora do Git. Se existir um `data/tasks.json` antigo com tud
 - marcar tarefas como concluidas
 - somar pontos por prioridade
 - acompanhar meta diaria, nivel, XP, streak e historico
+- acompanhar estatisticas semanais, meta semanal e conquistas
 - criar e resgatar recompensas com imagem opcional usando pontos disponiveis

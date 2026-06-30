@@ -70,26 +70,123 @@ button:disabled {
   padding: 24px;
 }
 
-.topbar {
-  display: flex;
+.app-navbar {
+  position: sticky;
+  top: 12px;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(420px, 1.25fr) auto;
+  gap: 14px;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 72px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 94%, var(--surface-soft));
+  box-shadow: var(--shadow);
 }
 
-.topbar h1,
+.navbar-profile {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.profile-heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-avatar-button {
+  display: grid;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 0;
+}
+
+.profile-avatar-button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 34%, transparent);
+  outline-offset: 3px;
+}
+
+.brand-mark {
+  display: grid;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.profile-avatar {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border));
+}
+
+.profile-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar img[hidden],
+.profile-avatar.has-image span {
+  display: none;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nav-wallet {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 8px;
+  row-gap: 2px;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  white-space: nowrap;
+}
+
+.nav-wallet span,
+.nav-wallet small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.nav-wallet strong {
+  color: var(--primary-strong);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.nav-wallet small {
+  grid-column: 1 / -1;
+}
+
+.profile-name-input,
 .panel-heading h2,
 .task-toolbar h2,
 .task-card h3 {
   margin: 0;
   line-height: 1.15;
-}
-
-.topbar h1 {
-  font-size: 32px;
-  font-weight: 750;
 }
 
 .eyebrow {
@@ -99,24 +196,26 @@ button:disabled {
 }
 
 .main-nav {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 6px;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--surface);
+  background: var(--surface-soft);
 }
 
 .nav-tab {
   min-height: 42px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 6px;
   background: transparent;
   color: var(--muted);
-  padding: 0 16px;
+  padding: 0 12px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .nav-tab:hover {
@@ -125,8 +224,8 @@ button:disabled {
 }
 
 .nav-tab.active {
-  background: var(--text);
-  color: var(--surface);
+  background: var(--primary);
+  color: #ffffff;
 }
 
 .tab-view[hidden] {
@@ -135,7 +234,7 @@ button:disabled {
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -143,7 +242,9 @@ button:disabled {
 .metric-card,
 .tool-panel,
 .tasks-panel,
-.rewards-panel {
+.rewards-panel,
+.progress-panel,
+.achievements-panel {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -181,10 +282,6 @@ button:disabled {
   border-color: transparent;
 }
 
-.wallet-card {
-  background: color-mix(in srgb, var(--blue) 10%, var(--surface));
-}
-
 .workspace-grid {
   display: grid;
   grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
@@ -192,11 +289,20 @@ button:disabled {
   align-items: start;
 }
 
-.rewards-workspace {
+.profile-workspace,
+.rewards-workspace,
+.progress-workspace {
   display: grid;
   grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
+}
+
+.achievements-workspace,
+.profile-progress {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
 }
 
 .side-stack {
@@ -211,7 +317,9 @@ button:disabled {
 
 .tool-panel,
 .tasks-panel,
-.rewards-panel {
+.rewards-panel,
+.progress-panel,
+.achievements-panel {
   padding: 18px;
 }
 
@@ -259,6 +367,10 @@ button:disabled {
   margin-top: 12px;
 }
 
+#profileForm .field + .field {
+  margin-top: 12px;
+}
+
 input,
 select {
   width: 100%;
@@ -275,6 +387,26 @@ input:focus,
 select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+input.profile-name-input {
+  min-height: 34px;
+  overflow: hidden;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text);
+  padding: 0 6px;
+  text-overflow: ellipsis;
+  font-size: 24px;
+  font-weight: 750;
+}
+
+input.profile-name-input:focus {
+  background: var(--surface-soft);
+}
+
+input.profile-name-input::placeholder {
+  color: var(--muted);
 }
 
 .check-field {
@@ -374,7 +506,9 @@ select:focus {
 }
 
 .tasks-panel,
-.rewards-panel {
+.rewards-panel,
+.progress-panel,
+.achievements-panel {
   min-height: 620px;
 }
 
@@ -382,8 +516,46 @@ select:focus {
   min-height: 360px;
 }
 
+.progress-panel,
+.achievements-panel {
+  min-height: 360px;
+}
+
 .task-toolbar {
   margin-bottom: 14px;
+}
+
+.task-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+#openTaskComposerButton {
+  white-space: nowrap;
+}
+
+.navbar-new-task,
+.theme-toggle {
+  white-space: nowrap;
+}
+
+#openTaskComposerButton.active {
+  background: var(--primary-strong);
+}
+
+.task-composer {
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--primary) 7%, var(--surface-soft));
+}
+
+.task-composer[hidden] {
+  display: none;
 }
 
 .segmented-control {
@@ -579,6 +751,92 @@ select:focus {
   color: var(--text);
 }
 
+.weekly-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  display: grid;
+  gap: 10px;
+  min-height: 116px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.stat-card span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stat-card strong {
+  align-self: end;
+  overflow-wrap: anywhere;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.wide-stat {
+  grid-column: span 2;
+}
+
+.achievement-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.achievement-card {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.achievement-card.unlocked {
+  border-color: color-mix(in srgb, var(--success) 36%, var(--border));
+  background: color-mix(in srgb, var(--success) 8%, var(--surface));
+}
+
+.achievement-content {
+  min-width: 0;
+}
+
+.achievement-card h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+}
+
+.achievement-card p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.compact-meter {
+  height: 6px;
+  margin-top: 12px;
+}
+
+.achievement-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.achievement-meta .achievement-unlocked {
+  color: var(--success);
+  font-weight: 800;
+}
+
 .rewards-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 330px);
@@ -656,6 +914,7 @@ select:focus {
 }
 
 .reward-meta span,
+.achievement-meta span,
 .redemption-row span,
 .redemption-row strong {
   min-height: 24px;
@@ -731,6 +990,20 @@ select:focus {
 }
 
 @media (max-width: 1040px) {
+  .app-navbar {
+    grid-template-columns: 1fr;
+    top: 8px;
+  }
+
+  .navbar-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .main-nav {
+    width: 100%;
+  }
+
   .metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -739,12 +1012,16 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
-  .rewards-workspace {
+  .profile-workspace,
+  .rewards-workspace,
+  .progress-workspace {
     grid-template-columns: 1fr;
   }
 
   .tasks-panel,
-  .rewards-panel {
+  .rewards-panel,
+  .progress-panel,
+  .achievements-panel {
     min-height: 420px;
   }
 
@@ -762,29 +1039,69 @@ select:focus {
     padding: 16px;
   }
 
-  .topbar,
+  .app-navbar {
+    top: 0;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .navbar-profile,
+  .navbar-actions {
+    width: 100%;
+  }
+
+  .navbar-actions {
+    align-items: stretch;
+  }
+
+  .navbar-new-task,
+  .theme-toggle {
+    flex: 1 1 140px;
+  }
+
+  .nav-wallet {
+    flex: 1 1 100%;
+  }
+
   .task-toolbar,
   .panel-heading {
     align-items: flex-start;
     flex-direction: column;
   }
 
+  .task-toolbar-actions {
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .task-toolbar-actions .segmented-control {
+    justify-content: flex-start;
+  }
+
   .main-nav {
+    display: flex;
     overflow-x: auto;
   }
 
   .nav-tab {
-    flex: 1 0 auto;
+    flex: 1 0 126px;
   }
 
-  .topbar h1 {
-    font-size: 26px;
+  input.profile-name-input {
+    font-size: 22px;
   }
 
   .metrics-grid,
   .field-grid,
-  .task-list {
+  .task-list,
+  .weekly-metrics-grid,
+  .achievement-list {
     grid-template-columns: 1fr;
+  }
+
+  .wide-stat {
+    grid-column: span 1;
   }
 
   .task-card {

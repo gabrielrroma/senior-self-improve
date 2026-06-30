@@ -8,6 +8,13 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from date_utils import format_date, format_day_count, previous_day_key, today_key, today_label, to_int
+from progress_service import (
+    build_achievement_summary,
+    build_achievements_view,
+    build_weekly_stats,
+    sync_achievements,
+    sync_weekly_goal_bonus,
+)
 from reward_service import (
     can_redeem_reward,
     create_reward,
@@ -46,7 +53,9 @@ from settings import (
     CATEGORIES,
     FILTERS,
     MAX_DAILY_GOAL_POINTS,
+    MAX_WEEKLY_GOAL_TASKS,
     MIN_DAILY_GOAL_POINTS,
+    MIN_WEEKLY_GOAL_TASKS,
     PRIORITY_POINTS,
 )
 from storage import RoutineStorage
@@ -56,6 +65,9 @@ ROOT_DIR = Path(__file__).resolve().parent
 WEB_DIR = ROOT_DIR / "web"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8000
+DEFAULT_PROFILE_NAME = "Rotina Diaria"
+MAX_PROFILE_NAME_LENGTH = 80
+MAX_PROFILE_AVATAR_URL_LENGTH = 500
 
 mimetypes.add_type("image/webp", ".webp")
 
@@ -101,6 +113,11 @@ class RoutineWebState:
 
     def _save_data(self):
         self.update_current_day_history()
+        progress_messages = self.sync_progress_rewards()
+        self._write_data()
+        return progress_messages
+
+    def _write_data(self):
         error = self.storage.save(
             self.current_day,
             self.tasks,
@@ -115,6 +132,53 @@ class RoutineWebState:
         )
         if error:
             raise RoutineApiError(error, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    def sync_progress_rewards(self):
+        weekly_stats = build_weekly_stats(
+            self.history,
+            self.archived_days,
+            self.tasks,
+            self.current_day,
+            self.gamification,
+        )
+        self.points_total, weekly_changed, weekly_messages = sync_weekly_goal_bonus(
+            self.gamification,
+            weekly_stats,
+            self.current_day,
+            self.points_total,
+        )
+        display_streak = calculate_display_streak(self.gamification, self.build_daily_summary())
+        achievements_changed, achievement_messages = sync_achievements(
+            self.gamification,
+            self.history,
+            self.points_total,
+            self.current_day,
+            display_streak,
+        )
+        if weekly_changed or achievements_changed:
+            return weekly_messages + achievement_messages
+        return []
+
+    def _join_messages(self, *parts):
+        messages = []
+        for part in parts:
+            if not part:
+                continue
+            if isinstance(part, list):
+                messages.extend(str(message) for message in part if message)
+            else:
+                messages.append(str(part))
+        return " ".join(messages)
+
+    def build_profile_view(self):
+        name = str(self.profile.get("name", "")).strip()
+        avatar_url = str(self.profile.get("avatar_url", "")).strip()
+        return {
+            **self.profile,
+            "name": name,
+            "display_name": name or DEFAULT_PROFILE_NAME,
+            "avatar_url": avatar_url,
+        }
 
     def build_daily_summary(self, summary_date=None):
         return build_daily_summary(self.tasks, summary_date or self.current_day)
@@ -159,14 +223,17 @@ class RoutineWebState:
         if streak_messages:
             feedback = f"{feedback} {' '.join(streak_messages)}"
 
-        self._save_data()
-        return feedback
+        progress_messages = self._save_data()
+        return self._join_messages(feedback, progress_messages)
 
     def snapshot(self, selected_filter="Todas", message=None):
         with self.lock:
             selected_filter = selected_filter if selected_filter in FILTERS else "Todas"
             rollover_message = self.check_day_rollover()
             self.update_current_day_history()
+            progress_messages = self.sync_progress_rewards()
+            if progress_messages:
+                self._write_data()
             summary = self.build_daily_summary()
             level_info = get_level_info(self.points_total)
             goal = get_daily_goal_points(self.gamification)
@@ -174,6 +241,20 @@ class RoutineWebState:
             goal_progress = int((min(goal_points, goal) / goal) * 100) if goal else 0
             display_streak = calculate_display_streak(self.gamification, summary)
             points_available = get_available_points(self.points_total, self.points_spent)
+            weekly_stats = build_weekly_stats(
+                self.history,
+                self.archived_days,
+                self.tasks,
+                self.current_day,
+                self.gamification,
+            )
+            achievements = build_achievements_view(
+                self.gamification,
+                self.history,
+                self.points_total,
+                display_streak,
+            )
+            achievement_summary = build_achievement_summary(achievements)
 
             tasks = []
             for task in get_visible_tasks(self.tasks, selected_filter):
@@ -240,7 +321,8 @@ class RoutineWebState:
                 )
 
             return {
-                "message": message or rollover_message or self.load_error or "Pronto",
+                "message": self._join_messages(message or rollover_message or self.load_error, progress_messages)
+                or "Pronto",
                 "current_day": self.current_day,
                 "today_label": today_label(),
                 "filters": list(FILTERS),
@@ -252,6 +334,10 @@ class RoutineWebState:
                     "min": MIN_DAILY_GOAL_POINTS,
                     "max": MAX_DAILY_GOAL_POINTS,
                 },
+                "weekly_goal_limits": {
+                    "min": MIN_WEEKLY_GOAL_TASKS,
+                    "max": MAX_WEEKLY_GOAL_TASKS,
+                },
                 "summary": {
                     **summary,
                     "pending_tasks": max(0, summary["total_tasks"] - summary["completed_tasks"]),
@@ -260,6 +346,10 @@ class RoutineWebState:
                     "daily_goal_points": goal,
                     "daily_goal_progress": goal_progress,
                     "daily_goal_label": f"{goal_points}/{goal} pts",
+                    "weekly_goal_tasks": weekly_stats["goal_tasks"],
+                    "weekly_goal_progress": weekly_stats["goal_progress"],
+                    "weekly_goal_label": weekly_stats["goal_label"],
+                    "weekly_goal_bonus_points": weekly_stats["bonus_points"],
                     "streak_count": display_streak,
                     "streak_label": format_day_count(display_streak),
                     "best_streak": max(to_int(self.gamification.get("best_streak")), display_streak),
@@ -281,12 +371,30 @@ class RoutineWebState:
                     ),
                 },
                 "points_total": self.points_total,
-                "profile": self.profile,
+                "profile": self.build_profile_view(),
                 "tasks": tasks,
                 "history": history,
+                "weekly_stats": weekly_stats,
+                "achievements": achievements,
+                "achievement_summary": achievement_summary,
                 "rewards": rewards,
                 "reward_redemptions": reward_redemptions,
             }
+
+    def update_profile(self, payload):
+        with self.lock:
+            name = str(payload.get("name", self.profile.get("name", ""))).strip()
+            avatar_url = str(payload.get("avatar_url", self.profile.get("avatar_url", ""))).strip()
+
+            if len(name) > MAX_PROFILE_NAME_LENGTH:
+                raise RoutineApiError(f"Use um nome com ate {MAX_PROFILE_NAME_LENGTH} caracteres.")
+            if len(avatar_url) > MAX_PROFILE_AVATAR_URL_LENGTH:
+                raise RoutineApiError(f"Use uma URL de foto com ate {MAX_PROFILE_AVATAR_URL_LENGTH} caracteres.")
+
+            self.profile["name"] = name
+            self.profile["avatar_url"] = avatar_url
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages("Perfil atualizado.", progress_messages))
 
     def add_task(self, payload):
         with self.lock:
@@ -303,8 +411,8 @@ class RoutineWebState:
                     bool(payload.get("pinned", False)),
                 )
             )
-            self._save_data()
-            return self.snapshot(message="Tarefa adicionada.")
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages("Tarefa adicionada.", progress_messages))
 
     def update_existing_task(self, task_id, payload):
         with self.lock:
@@ -316,8 +424,8 @@ class RoutineWebState:
 
             update_task(task, title, payload.get("priority", "Media"), payload.get("category", "Outros"))
             set_task_pinned(task, bool(payload.get("pinned", False)))
-            self._save_data()
-            return self.snapshot(message="Tarefa atualizada.")
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages("Tarefa atualizada.", progress_messages))
 
     def complete_existing_task(self, task_id):
         with self.lock:
@@ -330,8 +438,8 @@ class RoutineWebState:
             message = f"+{points} pontos adicionados."
             if is_daily_goal_complete(self.gamification, self.build_daily_summary()):
                 message = f"{message} Meta diaria concluida."
-            self._save_data()
-            return self.snapshot(message=message)
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages(message, progress_messages))
 
     def reopen_existing_task(self, task_id):
         with self.lock:
@@ -341,8 +449,8 @@ class RoutineWebState:
                 return self.snapshot(message="Essa tarefa ja esta pendente.")
 
             self.points_total, points = reopen_task(task, self.points_total)
-            self._save_data()
-            return self.snapshot(message=f"{points} pontos removidos.")
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages(f"{points} pontos removidos.", progress_messages))
 
     def toggle_pin_existing_task(self, task_id):
         with self.lock:
@@ -350,26 +458,40 @@ class RoutineWebState:
             task = self._get_task_or_error(task_id)
             pinned = not task.get("pinned", False)
             set_task_pinned(task, pinned)
-            self._save_data()
+            progress_messages = self._save_data()
             if pinned:
-                return self.snapshot(message="Missao fixada. Ela voltara todo dia.")
-            return self.snapshot(message="Missao desafixada.")
+                return self.snapshot(
+                    message=self._join_messages("Missao fixada. Ela voltara todo dia.", progress_messages)
+                )
+            return self.snapshot(message=self._join_messages("Missao desafixada.", progress_messages))
 
     def delete_existing_task(self, task_id):
         with self.lock:
             self.check_day_rollover()
             task = self._get_task_or_error(task_id)
             self.tasks, self.points_total = delete_task(self.tasks, task, self.points_total)
-            self._save_data()
-            return self.snapshot(message="Tarefa excluida.")
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages("Tarefa excluida.", progress_messages))
 
     def update_daily_goal(self, payload):
         with self.lock:
             goal = to_int(payload.get("daily_goal_points"), get_daily_goal_points(self.gamification))
             goal = max(MIN_DAILY_GOAL_POINTS, min(MAX_DAILY_GOAL_POINTS, goal))
             self.gamification["daily_goal_points"] = goal
-            self._save_data()
-            return self.snapshot(message=f"Meta diaria atualizada para {goal} pontos.")
+            progress_messages = self._save_data()
+            return self.snapshot(
+                message=self._join_messages(f"Meta diaria atualizada para {goal} pontos.", progress_messages)
+            )
+
+    def update_weekly_goal(self, payload):
+        with self.lock:
+            goal = to_int(payload.get("weekly_goal_tasks"), self.gamification.get("weekly_goal_tasks"))
+            goal = max(MIN_WEEKLY_GOAL_TASKS, min(MAX_WEEKLY_GOAL_TASKS, goal))
+            self.gamification["weekly_goal_tasks"] = goal
+            progress_messages = self._save_data()
+            return self.snapshot(
+                message=self._join_messages(f"Meta semanal atualizada para {goal} tarefas.", progress_messages)
+            )
 
     def add_reward(self, payload):
         with self.lock:
@@ -381,8 +503,8 @@ class RoutineWebState:
             description = str(payload.get("description", "")).strip()
             image_url = str(payload.get("image_url", "")).strip()
             self.rewards.append(create_reward(title, cost, description, image_url))
-            self._save_data()
-            return self.snapshot(message="Recompensa adicionada.")
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages("Recompensa adicionada.", progress_messages))
 
     def update_existing_reward(self, reward_id, payload):
         with self.lock:
@@ -395,15 +517,15 @@ class RoutineWebState:
             description = str(payload.get("description", "")).strip()
             image_url = str(payload.get("image_url", "")).strip()
             update_reward(reward, title, cost, description, image_url)
-            self._save_data()
-            return self.snapshot(message="Recompensa atualizada.")
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages("Recompensa atualizada.", progress_messages))
 
     def delete_existing_reward(self, reward_id):
         with self.lock:
             reward = self._get_reward_or_error(reward_id)
             self.rewards = delete_reward_item(self.rewards, reward)
-            self._save_data()
-            return self.snapshot(message="Recompensa excluida.")
+            progress_messages = self._save_data()
+            return self.snapshot(message=self._join_messages("Recompensa excluida.", progress_messages))
 
     def redeem_existing_reward(self, reward_id):
         with self.lock:
@@ -413,8 +535,10 @@ class RoutineWebState:
 
             self.points_spent, redemption = redeem_reward(reward, self.points_spent)
             self.reward_redemptions.append(redemption)
-            self._save_data()
-            return self.snapshot(message=f"Recompensa resgatada: {reward['title']}.")
+            progress_messages = self._save_data()
+            return self.snapshot(
+                message=self._join_messages(f"Recompensa resgatada: {reward['title']}.", progress_messages)
+            )
 
     def _get_task_or_error(self, task_id):
         task = find_task(self.tasks, task_id)
@@ -478,6 +602,10 @@ def make_handler(app_state):
                     self._send_json(app_state.add_reward(payload), HTTPStatus.CREATED)
                     return
 
+                if parts == ["api", "profile"] and self.command == "PUT":
+                    self._send_json(app_state.update_profile(payload))
+                    return
+
                 if len(parts) == 3 and parts[:2] == ["api", "tasks"]:
                     task_id = parts[2]
                     if self.command == "PUT":
@@ -518,6 +646,10 @@ def make_handler(app_state):
 
                 if parts == ["api", "settings", "daily-goal"] and self.command == "PUT":
                     self._send_json(app_state.update_daily_goal(payload))
+                    return
+
+                if parts == ["api", "settings", "weekly-goal"] and self.command == "PUT":
+                    self._send_json(app_state.update_weekly_goal(payload))
                     return
 
                 raise RoutineApiError("Rota nao encontrada.", HTTPStatus.NOT_FOUND)

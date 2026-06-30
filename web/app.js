@@ -7,8 +7,21 @@ const state = {
   toastTimer: null,
 };
 
+const DEFAULT_PROFILE_NAME = "Rotina Diaria";
+const VIEW_ALIASES = {
+  progress: "profile",
+};
+
 const elements = {
   todayLabel: document.querySelector("#todayLabel"),
+  profileNameInput: document.querySelector("#profileNameInput"),
+  profileForm: document.querySelector("#profileForm"),
+  profileFormName: document.querySelector("#profileFormName"),
+  profileAvatarUrl: document.querySelector("#profileAvatarUrl"),
+  profileAvatar: document.querySelector("#profileAvatar"),
+  profileAvatarImage: document.querySelector("#profileAvatarImage"),
+  profileAvatarInitials: document.querySelector("#profileAvatarInitials"),
+  profileAvatarButton: document.querySelector("#profileAvatarButton"),
   completedMetric: document.querySelector("#completedMetric"),
   pendingMetric: document.querySelector("#pendingMetric"),
   progressMetric: document.querySelector("#progressMetric"),
@@ -23,6 +36,9 @@ const elements = {
   streakMetric: document.querySelector("#streakMetric"),
   bestStreakMetric: document.querySelector("#bestStreakMetric"),
   motivationText: document.querySelector("#motivationText"),
+  taskComposer: document.querySelector("#taskComposer"),
+  openTaskComposerButton: document.querySelector("#openTaskComposerButton"),
+  closeTaskComposerButton: document.querySelector("#closeTaskComposerButton"),
   taskForm: document.querySelector("#taskForm"),
   formTitle: document.querySelector("#formTitle"),
   taskTitle: document.querySelector("#taskTitle"),
@@ -33,6 +49,19 @@ const elements = {
   clearTaskButton: document.querySelector("#clearTaskButton"),
   dailyGoalInput: document.querySelector("#dailyGoalInput"),
   goalForm: document.querySelector("#goalForm"),
+  weeklyGoalInput: document.querySelector("#weeklyGoalInput"),
+  weeklyGoalForm: document.querySelector("#weeklyGoalForm"),
+  weeklyGoalMetric: document.querySelector("#weeklyGoalMetric"),
+  weeklyGoalProgressBar: document.querySelector("#weeklyGoalProgressBar"),
+  weeklyBonusText: document.querySelector("#weeklyBonusText"),
+  weekRangeLabel: document.querySelector("#weekRangeLabel"),
+  weeklyCompletedMetric: document.querySelector("#weeklyCompletedMetric"),
+  weeklyPointsMetric: document.querySelector("#weeklyPointsMetric"),
+  weeklyBestDayMetric: document.querySelector("#weeklyBestDayMetric"),
+  weeklyCategoryMetric: document.querySelector("#weeklyCategoryMetric"),
+  weeklyCompletionMetric: document.querySelector("#weeklyCompletionMetric"),
+  achievementSummaryMetric: document.querySelector("#achievementSummaryMetric"),
+  achievementList: document.querySelector("#achievementList"),
   rewardForm: document.querySelector("#rewardForm"),
   rewardFormTitle: document.querySelector("#rewardFormTitle"),
   rewardTitle: document.querySelector("#rewardTitle"),
@@ -86,9 +115,11 @@ async function loadState(showReadyMessage = false) {
 function render(data) {
   renderOptions(data);
   renderFilters(data);
+  renderProfile(data.profile);
   renderSummary(data);
   renderTasks(data.tasks);
   renderHistory(data.history);
+  renderProgress(data);
   renderRewards(data.rewards, data.wallet);
   renderRedemptions(data.reward_redemptions);
 }
@@ -99,6 +130,9 @@ function renderOptions(data) {
   elements.dailyGoalInput.min = data.daily_goal_limits.min;
   elements.dailyGoalInput.max = data.daily_goal_limits.max;
   elements.dailyGoalInput.value = data.gamification.daily_goal_points;
+  elements.weeklyGoalInput.min = data.weekly_goal_limits.min;
+  elements.weeklyGoalInput.max = data.weekly_goal_limits.max;
+  elements.weeklyGoalInput.value = data.gamification.weekly_goal_tasks;
 }
 
 function fillSelect(select, values, fallback) {
@@ -134,13 +168,60 @@ function renderFilters(data) {
   );
 }
 
+function renderProfile(profile = {}) {
+  const displayName = getProfileDisplayName(profile);
+  const avatarUrl = String(profile.avatar_url || "").trim();
+
+  syncInputValue(elements.profileNameInput, displayName);
+  syncInputValue(elements.profileFormName, displayName);
+  syncInputValue(elements.profileAvatarUrl, avatarUrl);
+  renderProfileAvatar(displayName, avatarUrl);
+}
+
+function syncInputValue(input, value) {
+  if (document.activeElement !== input) {
+    input.value = value;
+  }
+}
+
+function getProfileDisplayName(profile = {}) {
+  const name = String(profile.display_name || profile.name || "").trim();
+  return name || DEFAULT_PROFILE_NAME;
+}
+
+function renderProfileAvatar(name, avatarUrl) {
+  elements.profileAvatarInitials.textContent = getProfileInitials(name);
+
+  if (!avatarUrl) {
+    elements.profileAvatar.classList.remove("has-image");
+    elements.profileAvatarImage.hidden = true;
+    elements.profileAvatarImage.removeAttribute("src");
+    return;
+  }
+
+  if (elements.profileAvatarImage.getAttribute("src") !== avatarUrl) {
+    elements.profileAvatarImage.src = avatarUrl;
+  }
+  elements.profileAvatarImage.hidden = false;
+  elements.profileAvatar.classList.add("has-image");
+}
+
+function getProfileInitials(name) {
+  const words = String(name || DEFAULT_PROFILE_NAME)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const initials = words.slice(0, 2).map((word) => word[0]).join("");
+  return (initials || "RD").toUpperCase();
+}
+
 function renderSummary(data) {
   const summary = data.summary;
   const gamification = data.gamification;
   const level = data.level;
   const wallet = data.wallet;
 
-  elements.todayLabel.textContent = `Painel de hoje - ${data.today_label}`;
+  elements.todayLabel.textContent = `Hoje - ${data.today_label}`;
   elements.completedMetric.textContent = `${summary.completed_tasks} de ${summary.total_tasks}`;
   elements.pendingMetric.textContent = summary.pending_tasks;
   elements.progressMetric.textContent = `${summary.completion_percentage}%`;
@@ -148,7 +229,7 @@ function renderSummary(data) {
   elements.goalMetric.textContent = gamification.daily_goal_label;
   elements.levelMetric.textContent = level.level;
   elements.xpMetric.textContent = level.xp_label;
-  elements.availablePointsMetric.textContent = wallet.points_available;
+  elements.availablePointsMetric.textContent = wallet.points_available_label;
   elements.spentPointsMetric.textContent = wallet.points_spent_label;
   elements.storeBalanceMetric.textContent = wallet.points_available_label;
   elements.streakMetric.textContent = gamification.streak_label;
@@ -281,6 +362,69 @@ function renderHistory(history) {
   elements.historyList.replaceChildren(...rows);
 }
 
+function renderProgress(data) {
+  const weekly = data.weekly_stats;
+
+  elements.weekRangeLabel.textContent = weekly.week_label;
+  elements.weeklyCompletedMetric.textContent = weekly.completed_tasks;
+  elements.weeklyPointsMetric.textContent = weekly.points_earned;
+  elements.weeklyBestDayMetric.textContent = weekly.best_day.label;
+  elements.weeklyCategoryMetric.textContent = weekly.top_category.label;
+  elements.weeklyCompletionMetric.textContent = `${weekly.completion_percentage}%`;
+  elements.weeklyGoalMetric.textContent = weekly.goal_label;
+  elements.weeklyBonusText.textContent = weekly.bonus_awarded
+    ? `Bonus semanal recebido: ${weekly.bonus_label}`
+    : `Bonus semanal: ${weekly.bonus_label}`;
+  elements.achievementSummaryMetric.textContent = data.achievement_summary.label;
+  setMeter(elements.weeklyGoalProgressBar, weekly.goal_progress);
+  renderAchievements(data.achievements);
+}
+
+function renderAchievements(achievements) {
+  if (!achievements.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "Nenhuma conquista configurada.";
+    elements.achievementList.replaceChildren(empty);
+    return;
+  }
+
+  const cards = achievements.map((achievement) => {
+    const card = document.createElement("article");
+    card.className = "achievement-card";
+    card.classList.toggle("unlocked", achievement.unlocked);
+
+    const content = document.createElement("div");
+    content.className = "achievement-content";
+
+    const title = document.createElement("h3");
+    title.textContent = achievement.title;
+
+    const description = document.createElement("p");
+    description.textContent = achievement.description;
+
+    const meter = document.createElement("div");
+    meter.className = "meter compact-meter";
+    const meterValue = document.createElement("span");
+    meterValue.style.width = `${Math.max(0, Math.min(100, achievement.progress_percentage))}%`;
+    meter.append(meterValue);
+
+    const meta = document.createElement("div");
+    meta.className = "achievement-meta";
+    meta.append(
+      metaPill(achievement.status_label, achievement.unlocked ? "achievement-unlocked" : ""),
+      metaPill(achievement.progress_label),
+      metaPill(achievement.unlocked_label || "Em progresso")
+    );
+
+    content.append(title, description, meter, meta);
+    card.append(content);
+    return card;
+  });
+
+  elements.achievementList.replaceChildren(...cards);
+}
+
 function renderRewards(rewards, wallet) {
   if (!rewards.length) {
     const empty = document.createElement("div");
@@ -381,13 +525,40 @@ function textCell(text, strong = false) {
   return element;
 }
 
-function resetTaskForm() {
+function configureTaskFormForCreate() {
   state.editingTaskId = null;
   elements.formTitle.textContent = "Nova tarefa";
   elements.submitTaskButton.textContent = "Adicionar";
   elements.taskForm.reset();
   elements.taskPriority.value = "Media";
   elements.taskCategory.value = "Outros";
+  elements.taskPinned.checked = false;
+}
+
+function showTaskComposer(focusTitle = true) {
+  elements.taskComposer.hidden = false;
+  elements.taskComposer.classList.add("open");
+  elements.openTaskComposerButton.classList.add("active");
+  if (focusTitle) {
+    window.setTimeout(() => elements.taskTitle.focus(), 0);
+  }
+}
+
+function hideTaskComposer() {
+  elements.taskComposer.hidden = true;
+  elements.taskComposer.classList.remove("open");
+  elements.openTaskComposerButton.classList.remove("active");
+}
+
+function resetTaskForm() {
+  configureTaskFormForCreate();
+  hideTaskComposer();
+}
+
+function openNewTaskComposer() {
+  setActiveView("routine");
+  configureTaskFormForCreate();
+  showTaskComposer();
 }
 
 function resetRewardForm() {
@@ -412,7 +583,7 @@ function editTask(taskId) {
   elements.taskPriority.value = task.priority;
   elements.taskCategory.value = task.category;
   elements.taskPinned.checked = task.pinned;
-  elements.taskTitle.focus();
+  showTaskComposer();
 }
 
 function editReward(rewardId) {
@@ -453,6 +624,31 @@ async function submitGoal(event) {
     method: "PUT",
     body: JSON.stringify({
       daily_goal_points: elements.dailyGoalInput.value,
+    }),
+  });
+}
+
+async function submitProfile(event) {
+  event.preventDefault();
+  await saveProfile();
+}
+
+async function saveProfile() {
+  await mutate("/api/profile", {
+    method: "PUT",
+    body: JSON.stringify({
+      name: elements.profileFormName.value.trim(),
+      avatar_url: elements.profileAvatarUrl.value.trim(),
+    }),
+  });
+}
+
+async function submitWeeklyGoal(event) {
+  event.preventDefault();
+  await mutate("/api/settings/weekly-goal", {
+    method: "PUT",
+    body: JSON.stringify({
+      weekly_goal_tasks: elements.weeklyGoalInput.value,
     }),
   });
 }
@@ -553,6 +749,42 @@ function setupTheme() {
   });
 }
 
+function setupProfile() {
+  elements.profileAvatarImage.addEventListener("load", () => {
+    elements.profileAvatar.classList.add("has-image");
+    elements.profileAvatarImage.hidden = false;
+  });
+  elements.profileAvatarImage.addEventListener("error", () => {
+    elements.profileAvatar.classList.remove("has-image");
+    elements.profileAvatarImage.hidden = true;
+  });
+  elements.profileAvatarButton.addEventListener("click", () => {
+    setActiveView("profile");
+    window.setTimeout(() => elements.profileAvatarUrl.focus(), 0);
+  });
+  elements.profileNameInput.addEventListener("input", () => {
+    elements.profileFormName.value = elements.profileNameInput.value;
+    renderProfileAvatar(elements.profileNameInput.value, elements.profileAvatarUrl.value.trim());
+  });
+  elements.profileNameInput.addEventListener("change", () => {
+    elements.profileFormName.value = elements.profileNameInput.value;
+    saveProfile();
+  });
+  elements.profileNameInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      elements.profileNameInput.blur();
+    }
+  });
+  elements.profileFormName.addEventListener("input", () => {
+    elements.profileNameInput.value = elements.profileFormName.value;
+    renderProfileAvatar(elements.profileFormName.value, elements.profileAvatarUrl.value.trim());
+  });
+  elements.profileAvatarUrl.addEventListener("input", () => {
+    renderProfileAvatar(elements.profileFormName.value, elements.profileAvatarUrl.value.trim());
+  });
+}
+
 function setupNavigation() {
   for (const tab of elements.navTabs) {
     tab.addEventListener("click", () => {
@@ -565,7 +797,8 @@ function setupNavigation() {
 function setActiveView(view) {
   const panels = Array.from(elements.tabPanels);
   const tabs = Array.from(elements.navTabs);
-  const nextView = panels.some((panel) => panel.dataset.viewPanel === view) ? view : "routine";
+  const requestedView = VIEW_ALIASES[view] || view;
+  const nextView = panels.some((panel) => panel.dataset.viewPanel === requestedView) ? requestedView : "routine";
 
   state.activeView = nextView;
   localStorage.setItem("rotina-active-view", nextView);
@@ -593,14 +826,19 @@ function showToast(message) {
 }
 
 elements.taskForm.addEventListener("submit", submitTask);
+elements.openTaskComposerButton.addEventListener("click", openNewTaskComposer);
+elements.closeTaskComposerButton.addEventListener("click", resetTaskForm);
 elements.clearTaskButton.addEventListener("click", resetTaskForm);
+elements.profileForm.addEventListener("submit", submitProfile);
 elements.goalForm.addEventListener("submit", submitGoal);
+elements.weeklyGoalForm.addEventListener("submit", submitWeeklyGoal);
 elements.rewardForm.addEventListener("submit", submitReward);
 elements.clearRewardButton.addEventListener("click", resetRewardForm);
 elements.taskList.addEventListener("click", handleTaskAction);
 elements.rewardList.addEventListener("click", handleRewardAction);
 
 setupTheme();
+setupProfile();
 setupNavigation();
 resetRewardForm();
 loadState(true);

@@ -31,15 +31,14 @@ O MVP ideal é:
 
 Atualizado em 2026-06-30.
 
-O app já cobre o MVP, organização visual, histórico diário, reset diário, gamificação inicial, metas diárias e recompensas personalizáveis com resgate. Na prática, o produto está depois da Fase 4, com parte da Fase 6 e da Fase Técnica já iniciada.
+O app já cobre o MVP, organização visual, histórico diário, reset diário, gamificação inicial, metas diárias, recompensas personalizáveis com resgate, estatísticas semanais, meta semanal com bônus e conquistas iniciais. Na prática, o produto está depois da Fase 5, com parte da Fase 6 e da Fase Técnica já iniciada.
 
 Próximos focos recomendados:
 
 * filtros por prioridade e categoria
-* estatísticas semanais
-* conquistas
 * testes dos fluxos principais
 * organização técnica em pastas
+* modo foco / temporizador
 
 ---
 
@@ -324,43 +323,43 @@ Objetivo: fazer o usuário enxergar melhor sua evolução.
 
 ## Estatísticas semanais
 
-* [ ] Mostrar total de tarefas concluídas na semana
+* [x] Mostrar total de tarefas concluídas na semana
 
-* [ ] Mostrar total de pontos ganhos na semana
+* [x] Mostrar total de pontos ganhos na semana
 
-* [ ] Mostrar melhor dia da semana
+* [x] Mostrar melhor dia da semana
 
-* [ ] Mostrar categoria mais concluída
+* [x] Mostrar categoria mais concluída
 
-* [ ] Mostrar taxa de conclusão semanal
+* [x] Mostrar taxa de conclusão semanal
 
 ---
 
 ## Metas semanais
 
-* [ ] Criar meta semanal de tarefas
+* [x] Criar meta semanal de tarefas
 
-* [ ] Mostrar progresso da meta semanal
+* [x] Mostrar progresso da meta semanal
 
-* [ ] Dar bônus ao cumprir meta semanal
+* [x] Dar bônus ao cumprir meta semanal
 
 ---
 
 ## Conquistas
 
-* [ ] Criar sistema de conquistas
+* [x] Criar sistema de conquistas
 
-* [ ] Criar conquista de primeira tarefa concluída
+* [x] Criar conquista de primeira tarefa concluída
 
-* [ ] Criar conquista de 7 dias seguidos
+* [x] Criar conquista de 7 dias seguidos
 
-* [ ] Criar conquista de 100 tarefas concluídas
+* [x] Criar conquista de 100 tarefas concluídas
 
-* [ ] Criar conquista de primeira semana perfeita
+* [x] Criar conquista de primeira semana perfeita
 
-* [ ] Criar conquista de 500 pontos acumulados
+* [x] Criar conquista de 500 pontos acumulados
 
-* [ ] Mostrar conquistas desbloqueadas
+* [x] Mostrar conquistas desbloqueadas
 
 ---
 
@@ -574,8 +573,8 @@ Essas ideias só fazem sentido se o app crescer bastante.
 
 * [x] Criar recompensas personalizadas
 * [x] Criar loja de recompensas
-* [ ] Criar estatísticas semanais
-* [ ] Criar conquistas
+* [x] Criar estatísticas semanais
+* [x] Criar conquistas
 * [x] Criar tarefas recorrentes
 
 ---

@@ -27,6 +27,7 @@ dist/
 # Local Markdown notes
 *.md
 !README.md
+!CHANGELOG.md
 
 # OS files
 .DS_Store

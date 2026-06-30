@@ -4,8 +4,12 @@ from date_utils import format_day_count, previous_day_key, to_int, today_key
 from settings import (
     CATEGORIES,
     DEFAULT_DAILY_GOAL_POINTS,
+    DEFAULT_WEEKLY_GOAL_BONUS_POINTS,
+    DEFAULT_WEEKLY_GOAL_TASKS,
     MAX_DAILY_GOAL_POINTS,
+    MAX_WEEKLY_GOAL_TASKS,
     MIN_DAILY_GOAL_POINTS,
+    MIN_WEEKLY_GOAL_TASKS,
     PRIORITY_ORDER,
     PRIORITY_POINTS,
     XP_PER_LEVEL,
@@ -15,6 +19,10 @@ from settings import (
 def default_gamification():
     return {
         "daily_goal_points": DEFAULT_DAILY_GOAL_POINTS,
+        "weekly_goal_tasks": DEFAULT_WEEKLY_GOAL_TASKS,
+        "weekly_goal_bonus_points": DEFAULT_WEEKLY_GOAL_BONUS_POINTS,
+        "weekly_goal_awards": [],
+        "unlocked_achievements": [],
         "streak_count": 0,
         "best_streak": 0,
         "last_streak_date": None,
@@ -28,6 +36,14 @@ def normalize_gamification(raw_gamification):
     goal = to_int(raw_gamification.get("daily_goal_points"), DEFAULT_DAILY_GOAL_POINTS)
     goal = max(MIN_DAILY_GOAL_POINTS, min(MAX_DAILY_GOAL_POINTS, goal))
 
+    weekly_goal = to_int(raw_gamification.get("weekly_goal_tasks"), DEFAULT_WEEKLY_GOAL_TASKS)
+    weekly_goal = max(MIN_WEEKLY_GOAL_TASKS, min(MAX_WEEKLY_GOAL_TASKS, weekly_goal))
+
+    weekly_bonus = max(
+        0,
+        to_int(raw_gamification.get("weekly_goal_bonus_points"), DEFAULT_WEEKLY_GOAL_BONUS_POINTS),
+    )
+
     streak_count = max(0, to_int(raw_gamification.get("streak_count")))
     best_streak = max(streak_count, to_int(raw_gamification.get("best_streak")))
     last_streak_date = raw_gamification.get("last_streak_date") or None
@@ -36,10 +52,64 @@ def normalize_gamification(raw_gamification):
 
     return {
         "daily_goal_points": goal,
+        "weekly_goal_tasks": weekly_goal,
+        "weekly_goal_bonus_points": weekly_bonus,
+        "weekly_goal_awards": normalize_weekly_goal_awards(raw_gamification.get("weekly_goal_awards", [])),
+        "unlocked_achievements": normalize_unlocked_achievements(
+            raw_gamification.get("unlocked_achievements", raw_gamification.get("achievements", []))
+        ),
         "streak_count": streak_count,
         "best_streak": best_streak,
         "last_streak_date": last_streak_date,
     }
+
+
+def normalize_weekly_goal_awards(raw_awards):
+    if not isinstance(raw_awards, list):
+        return []
+
+    awards_by_week = {}
+    for raw_award in raw_awards:
+        if not isinstance(raw_award, dict):
+            continue
+
+        week_start = str(raw_award.get("week_start", "")).strip()
+        if not week_start:
+            continue
+
+        points = max(0, to_int(raw_award.get("points"), DEFAULT_WEEKLY_GOAL_BONUS_POINTS))
+        awarded_at = str(raw_award.get("awarded_at", week_start)).strip() or week_start
+        awards_by_week[week_start] = {
+            "week_start": week_start,
+            "points": points,
+            "awarded_at": awarded_at,
+        }
+
+    return sorted(awards_by_week.values(), key=lambda award: award["week_start"])
+
+
+def normalize_unlocked_achievements(raw_achievements):
+    if not isinstance(raw_achievements, list):
+        return []
+
+    achievements_by_id = {}
+    for raw_achievement in raw_achievements:
+        if isinstance(raw_achievement, dict):
+            achievement_id = str(raw_achievement.get("id", "")).strip()
+            unlocked_at = str(raw_achievement.get("unlocked_at", today_key())).strip() or today_key()
+        else:
+            achievement_id = str(raw_achievement).strip()
+            unlocked_at = today_key()
+
+        if not achievement_id:
+            continue
+
+        achievements_by_id[achievement_id] = {
+            "id": achievement_id,
+            "unlocked_at": unlocked_at,
+        }
+
+    return sorted(achievements_by_id.values(), key=lambda achievement: achievement["id"])
 
 
 def create_task(title, priority, category, pinned=False):

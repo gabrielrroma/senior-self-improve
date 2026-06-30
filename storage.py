@@ -42,6 +42,7 @@ class RoutineStorage:
         return {
             "name": "",
             "avatar": "spark",
+            "avatar_url": "",
             "theme": "system",
             "accent_color": "green",
         }
@@ -347,6 +348,12 @@ class RoutineStorage:
 
         name = str(raw_profile.get("name", profile["name"])).strip()
         profile["name"] = name
+
+        avatar_url = str(raw_profile.get("avatar_url", "")).strip()
+        legacy_avatar = str(raw_profile.get("avatar", "")).strip()
+        if not avatar_url and legacy_avatar.startswith(("http://", "https://", "/", "data:image/")):
+            avatar_url = legacy_avatar
+        profile["avatar_url"] = avatar_url[:500]
 
         for key in ("avatar", "theme", "accent_color"):
             value = str(raw_profile.get(key, profile[key])).strip()
