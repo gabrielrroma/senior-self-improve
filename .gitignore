@@ -24,10 +24,12 @@ dist/
 # Local app data
 /data/
 
+# Editor settings
+.vscode/
+
 # Local Markdown notes
-*.md
-!README.md
-!CHANGELOG.md
+*.local.md
+notes/
 
 # OS files
 .DS_Store
