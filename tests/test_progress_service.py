@@ -1,6 +1,6 @@
 import unittest
 
-from progress_service import (
+from services.progress_service import (
     build_weekly_stats,
     sync_achievements,
     sync_weekly_goal_bonus,

@@ -1,12 +1,12 @@
 from datetime import date, timedelta
 
-from date_utils import format_date, to_int, today_key
-from settings import (
+from models.settings import (
     DEFAULT_WEEKLY_GOAL_BONUS_POINTS,
     DEFAULT_WEEKLY_GOAL_TASKS,
     MAX_WEEKLY_GOAL_TASKS,
     MIN_WEEKLY_GOAL_TASKS,
 )
+from .date_utils import format_date, to_int, today_key
 
 
 ACHIEVEMENTS = (

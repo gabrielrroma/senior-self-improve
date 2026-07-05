@@ -7,15 +7,24 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from date_utils import format_date, format_day_count, previous_day_key, today_key, today_label, to_int
-from progress_service import (
+from models.settings import (
+    CATEGORIES,
+    FILTERS,
+    MAX_DAILY_GOAL_POINTS,
+    MAX_WEEKLY_GOAL_TASKS,
+    MIN_DAILY_GOAL_POINTS,
+    MIN_WEEKLY_GOAL_TASKS,
+    PRIORITY_POINTS,
+)
+from services.date_utils import format_date, format_day_count, previous_day_key, today_key, today_label, to_int
+from services.progress_service import (
     build_achievement_summary,
     build_achievements_view,
     build_weekly_stats,
     sync_achievements,
     sync_weekly_goal_bonus,
 )
-from reward_service import (
+from services.reward_service import (
     can_redeem_reward,
     create_reward,
     delete_reward as delete_reward_item,
@@ -26,7 +35,7 @@ from reward_service import (
     sort_rewards,
     update_reward,
 )
-from routine_service import (
+from services.routine_service import (
     apply_streak_for_summary,
     build_daily_summary,
     build_motivation_message,
@@ -49,16 +58,7 @@ from routine_service import (
     upsert_archive_day,
     upsert_history_summary,
 )
-from settings import (
-    CATEGORIES,
-    FILTERS,
-    MAX_DAILY_GOAL_POINTS,
-    MAX_WEEKLY_GOAL_TASKS,
-    MIN_DAILY_GOAL_POINTS,
-    MIN_WEEKLY_GOAL_TASKS,
-    PRIORITY_POINTS,
-)
-from storage import RoutineStorage
+from services.storage import RoutineStorage
 
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -256,26 +256,26 @@ class RoutineWebState:
             )
             achievement_summary = build_achievement_summary(achievements)
 
-            tasks = []
-            for task in get_visible_tasks(self.tasks, selected_filter):
+            def build_task_item(task):
                 points = task.get("points_awarded") if task["done"] else get_task_points(task)
-                tasks.append(
-                    {
-                        "id": task["id"],
-                        "title": task["title"],
-                        "done": task["done"],
-                        "priority": task["priority"],
-                        "category": task["category"],
-                        "pinned": task.get("pinned", False),
-                        "created_at": task.get("created_at"),
-                        "completed_at": task.get("completed_at"),
-                        "created_label": format_date(task.get("created_at")),
-                        "completed_label": format_date(task.get("completed_at")),
-                        "points": points,
-                        "points_label": f"{points} pts",
-                        "status_label": "Concluida" if task["done"] else "Pendente",
-                    }
-                )
+                return {
+                    "id": task["id"],
+                    "title": task["title"],
+                    "done": task["done"],
+                    "priority": task["priority"],
+                    "category": task["category"],
+                    "pinned": task.get("pinned", False),
+                    "created_at": task.get("created_at"),
+                    "completed_at": task.get("completed_at"),
+                    "created_label": format_date(task.get("created_at")),
+                    "completed_label": format_date(task.get("completed_at")),
+                    "points": points,
+                    "points_label": f"{points} pts",
+                    "status_label": "Concluida" if task["done"] else "Pendente",
+                }
+
+            tasks = [build_task_item(task) for task in get_visible_tasks(self.tasks, selected_filter)]
+            focus_tasks = [build_task_item(task) for task in get_visible_tasks(self.tasks, "Todas")]
 
             rewards = []
             for reward in sort_rewards(self.rewards):
@@ -373,6 +373,7 @@ class RoutineWebState:
                 "points_total": self.points_total,
                 "profile": self.build_profile_view(),
                 "tasks": tasks,
+                "focus_tasks": focus_tasks,
                 "history": history,
                 "weekly_stats": weekly_stats,
                 "achievements": achievements,

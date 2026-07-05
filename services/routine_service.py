@@ -1,7 +1,6 @@
 from uuid import uuid4
 
-from date_utils import format_day_count, previous_day_key, to_int, today_key
-from settings import (
+from models.settings import (
     CATEGORIES,
     DEFAULT_DAILY_GOAL_POINTS,
     DEFAULT_WEEKLY_GOAL_BONUS_POINTS,
@@ -14,6 +13,7 @@ from settings import (
     PRIORITY_POINTS,
     XP_PER_LEVEL,
 )
+from .date_utils import format_day_count, previous_day_key, to_int, today_key
 
 
 def default_gamification():

@@ -13,6 +13,25 @@ Webapp local para acompanhar tarefas do dia e recompensas por conclusao.
 
 3. Abra o endereco exibido no terminal, como `http://127.0.0.1:8000/`.
 
+A interface principal em `/` e renderizada em React a partir dos arquivos estaticos de `web/`. Nao ha passo separado de `npm install` ou build neste momento; o servidor Python continua sendo a entrada unica do app.
+
+## Estrutura
+
+- `web_app.py`: servidor local, rotas HTTP e API do app
+- `web/`: interface React estatica servida pelo Python
+- `services/`: regras de rotina, progresso, recompensas e persistencia
+- `models/`: constantes e configuracoes de dominio
+- `tests/`: testes automatizados
+- `data/`: dados locais gerados pelo app, fora do Git
+
+## Testes
+
+Execute os testes com:
+
+```bash
+python -m unittest discover -s tests
+```
+
 ## Dados locais
 
 O app cria arquivos JSON separados dentro de `data/` para salvar os dados locais:

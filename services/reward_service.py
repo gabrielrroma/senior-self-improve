@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from date_utils import today_key, to_int
+from .date_utils import today_key, to_int
 
 
 MIN_REWARD_COST = 1

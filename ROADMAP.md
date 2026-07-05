@@ -29,16 +29,83 @@ O MVP ideal é:
 
 ## Status atual
 
-Atualizado em 2026-06-30.
+Atualizado em 2026-07-05.
 
-O app já cobre o MVP, organização visual, histórico diário, reset diário, gamificação inicial, metas diárias, recompensas personalizáveis com resgate, estatísticas semanais, meta semanal com bônus e conquistas iniciais. Na prática, o produto está depois da Fase 5, com parte da Fase 6 e da Fase Técnica já iniciada.
+O app já cobre o MVP, organização visual, histórico diário, reset diário, gamificação inicial, metas diárias, recompensas personalizáveis com resgate, estatísticas semanais, meta semanal com bônus, conquistas iniciais, perfil local com avatar, tema claro/escuro e navegação por abas.
 
-Próximos focos recomendados:
+Também já houve limpeza do repositório: dados locais ficam fora do Git, cache Python fica ignorado, configurações pessoais do VS Code saíram do versionamento e o projeto ganhou `.editorconfig` e `.gitattributes`.
 
-* filtros por prioridade e categoria
-* testes dos fluxos principais
-* organização técnica em pastas
-* modo foco / temporizador
+No workspace atual, a interface está em redesign visual: a navbar passou para uma sidebar inspirada no Todoist, e a tela de recompensas recebeu correção de layout desktop/mobile. Essas mudanças ainda precisam ser commitadas e publicadas.
+
+Na prática, o produto está depois da Fase 7, com parte da Fase Técnica já iniciada. O próximo ciclo deveria ser menos sobre adicionar coisa nova e mais sobre estabilizar, testar e organizar.
+
+---
+
+## O que falta agora
+
+Nota de 2026-07-05: a interface principal em `/` foi migrada para React mantendo o backend Python/API atual e as features existentes. O prototipo paralelo em `/react/` foi removido para evitar duas interfaces concorrentes.
+
+## Migracao para React
+
+Objetivo: manter a interface principal em React sem quebrar o backend Python/API atual e sem manter telas paralelas concorrentes.
+
+Etapa 1 - Prototipo React inicial:
+
+* [x] Criar uma rota paralela para a primeira tela React
+* [x] Montar layout de board com colunas `Pendentes`, `Em foco` e `Concluidas`
+* [x] Integrar a API existente para listar, adicionar, concluir, reabrir, editar, fixar e excluir tarefas
+* [x] Permitir mover cards entre colunas com drag-and-drop simples
+* [x] Remover o prototipo paralelo depois da migracao completa da tela principal
+
+Etapa 2 - Base de tooling:
+
+* [ ] Instalar/disponibilizar Node.js no ambiente local
+* [ ] Criar base Vite + React quando o runtime estiver disponivel
+* [ ] Migrar a interface React atual para componentes JSX versionados no fluxo Vite
+* [ ] Definir processo de build para gerar arquivos estaticos servidos por `web_app.py`
+
+Etapa 3 - Paridade com a interface atual:
+
+* [x] Migrar modo foco Pomodoro para React
+* [x] Migrar perfil, metas e estatisticas semanais
+* [x] Migrar conquistas
+* [x] Migrar recompensas e historico de resgates
+* [x] Substituir a tela principal antiga somente depois de validar os fluxos principais
+
+Etapa 4 - Polimento e confiabilidade:
+
+* [x] Adicionar estados de loading, erro e vazio consistentes em todas as telas React
+* [ ] Criar testes para o contrato frontend/API das tarefas
+* [ ] Revisar acessibilidade, foco de teclado e contraste
+* [x] Documentar no README como rodar a versao React
+
+---
+
+Prioridade alta:
+
+* [ ] Commitar e publicar o redesign da sidebar e os ajustes da tela de recompensas
+* [ ] Revisar a interface completa em tema claro e escuro
+* [ ] Testar manualmente os fluxos principais no navegador
+* [ ] Criar testes para CRUD de tarefas
+* [ ] Criar testes para recompensas e resgates
+* [ ] Criar testes para salvamento/carregamento dos JSONs
+
+Prioridade média:
+
+* [ ] Filtrar tarefas por prioridade
+* [ ] Filtrar tarefas por categoria
+* [ ] Criar backup automático dos dados antes de sobrescrever JSONs
+* [x] Organizar o código em pastas (`services/`, `models/`, `web/`, `tests/`)
+* [ ] Melhorar README com screenshots e estado atual do app
+
+Prioridade baixa / ideias futuras:
+
+* [ ] Modo foco / temporizador
+* [ ] Recorrência semanal e mensal
+* [ ] Lembretes e notificações locais
+* [ ] Bônus por streak
+* [ ] Recompensa diária aleatória
+* [ ] Sincronização online, login e ranking
 
 ---
 
@@ -433,6 +500,14 @@ Objetivo: melhorar a aparência e a experiência visual do app.
 
 * [x] Melhorar visual da lista de tarefas
 
+* [x] Criar navegação lateral inspirada em apps de produtividade
+
+* [x] Adaptar navegação para mobile sem rolagem horizontal
+
+* [x] Melhorar layout da loja de recompensas no desktop
+
+* [x] Corrigir layout responsivo da tela de recompensas
+
 * [x] Destacar tarefas concluídas
 
 * [x] Destacar tarefas de alta prioridade
@@ -442,6 +517,8 @@ Objetivo: melhorar a aparência e a experiência visual do app.
 * [x] Criar tema escuro
 
 * [x] Permitir alternar entre tema claro e escuro
+
+* [x] Criar perfil local com nome e avatar
 
 ---
 
@@ -463,17 +540,25 @@ Objetivo: manter o projeto fácil de evoluir e evitar perda de dados.
 
 ## Organização do código
 
-* [ ] Separar código em pastas
+* [x] Separar código em pastas
 
-* [ ] Criar pasta de modelos
+* [x] Criar pasta de modelos
 
-* [ ] Criar pasta de serviços
+* [x] Criar pasta de serviços
 
-* [ ] Criar pasta de interface
+* [x] Criar pasta de interface
 
-* [ ] Criar pasta de dados
+* [x] Criar pasta de dados
 
 * [x] Evitar deixar toda a lógica no arquivo principal
+
+* [x] Separar responsabilidades em serviços (`routine_service`, `progress_service`, `reward_service`, `storage`)
+
+* [x] Remover arquivos locais/desnecessários do GitHub
+
+* [x] Configurar `.gitignore` para dados locais, cache e notas locais
+
+* [x] Adicionar `.editorconfig` e `.gitattributes`
 
 ---
 
@@ -487,6 +572,12 @@ Objetivo: manter o projeto fácil de evoluir e evitar perda de dados.
 
 * [x] Criar arquivo novo caso o arquivo de dados não exista
 
+* [x] Separar dados locais em JSONs por domínio
+
+* [x] Manter pasta `data/` fora do versionamento
+
+* [x] Migrar leitura de arquivo legado quando existir `data/tasks.json` antigo
+
 * [ ] Evitar duplicidade de tarefas ao carregar dados
 
 ---
@@ -498,6 +589,12 @@ Objetivo: manter o projeto fácil de evoluir e evitar perda de dados.
 * [ ] Criar comentários apenas onde for necessário
 
 * [ ] Remover código morto
+
+* [x] Criar testes de estatísticas semanais
+
+* [x] Criar testes de bônus semanal
+
+* [x] Criar testes de conquistas
 
 * [ ] Testar fluxo de adicionar tarefa
 
@@ -577,9 +674,22 @@ Essas ideias só fazem sentido se o app crescer bastante.
 * [x] Criar conquistas
 * [x] Criar tarefas recorrentes
 
+## Agora
+
+* [ ] Fechar e publicar redesign visual atual
+* [ ] Revisar responsividade geral
+* [ ] Criar filtros por prioridade e categoria
+* [ ] Ampliar testes dos fluxos principais
+* [ ] Criar backup automático dos dados
+* [x] Reorganizar estrutura de pastas
+
 ---
 
 # Versões sugeridas
+
+Versão atual registrada no projeto: `1.0.0`.
+
+Próxima versão sugerida: `v1.1.0`, focada em polimento visual, filtros melhores, testes e segurança dos dados.
 
 ## v0.1.0 ? MVP básico
 
@@ -626,3 +736,12 @@ Essas ideias só fazem sentido se o app crescer bastante.
 * Streak
 * Recompensas
 * Interface organizada
+
+## v1.1.0 ? Polimento e confiabilidade
+
+* Redesign da navegação lateral
+* Melhorias na tela de recompensas
+* Filtros por prioridade e categoria
+* Mais testes automatizados
+* Backup automático dos dados locais
+* Organização do código em pastas

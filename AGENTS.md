@@ -2,9 +2,14 @@
 
 Instrucoes para agentes trabalhando neste projeto.
 
+## No inicio da sessao
+
+- Leia `VERSIONAMENTO.md` uma vez no inicio da sessao de trabalho.
+- Se `VERSIONAMENTO.md` ja foi lido nesta sessao e nao mudou, nao precisa reler a cada tarefa.
+- Releia `VERSIONAMENTO.md` se a tarefa envolver branch, commit, tag, release, `VERSION` ou `CHANGELOG.md`.
+
 ## Antes de alterar arquivos
 
-- Leia `VERSIONAMENTO.md`.
 - Confira `git status --short --branch`.
 - Nao trabalhe diretamente na branch `main`.
 - Use a branch `develop` como branch padrao de trabalho.
